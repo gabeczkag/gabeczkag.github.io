@@ -90,8 +90,16 @@ function renderImageExplorer() {
   fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/assets/images`, {
     headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
   })
-  .then(r => r.ok ? r.json() : [])
+  .then(r => {
+    if (r.status === 404) {
+      grid.innerHTML = '<p class="admin-warn">Katalog assets/images/ jeszcze nie istnieje na GitHubie. Wgraj obraz, aby go utworzyć.</p>';
+      return null;
+    }
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
   .then(files => {
+    if (!files) return;
     grid.innerHTML = "";
     if (!Array.isArray(files) || !files.length) {
       grid.innerHTML = '<p class="admin-warn">Brak obrazów w assets/images/</p>';
@@ -121,7 +129,7 @@ function renderImageExplorer() {
     });
   })
   .catch(() => {
-    grid.innerHTML = '<p class="admin-warn">Nie udało się załadować obrazów.</p>';
+    grid.innerHTML = '<p class="admin-warn">Nie udało się załadować obrazów. Sprawdź, czy jesteś zalogowany.</p>';
   });
 }
 
@@ -315,7 +323,10 @@ async function save() {
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
       body: JSON.stringify({ message: "Aktualizacja projektow (panel)", content, sha: data.sha })
     });
-    if (put.ok) $("status").textContent = "Zapisano ✓ Strona odświeży się za 1–2 min (GitHub Pages).";
+    if (put.ok) {
+      $("status").textContent = "Zapisano ✓ Strona odświeży się za 1–2 min (GitHub Pages).";
+      renderImageExplorer();
+    }
     else {
       const e = await put.json().catch(() => ({}));
       let msg = e.message || ("HTTP " + put.status);
