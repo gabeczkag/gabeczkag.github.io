@@ -40,7 +40,7 @@ async function enter() {
 
 async function load() {
   try {
-    const r = await fetch("projects.json", { cache: "no-store" });
+    const r = await fetch("/projects.json", { cache: "no-store" });
     if (r.ok) {
       const d = await r.json();
       if (Array.isArray(d)) projects = d;
