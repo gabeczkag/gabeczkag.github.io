@@ -134,8 +134,7 @@ $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 $("login").onclick = () => {
   const state = crypto.randomUUID();
   sessionStorage.setItem("gw_state", state);
-  const base = location.pathname.replace(/index\.html$/, "").replace(/\/callback\/?$/, "");
-  const redirect = location.origin + base + "callback/";
+  const redirect = "https://gabeczkag.github.io/admin/callback/";
   const url = "https://github.com/login/oauth/authorize?client_id=" + CLIENT_ID +
     "&redirect_uri=" + encodeURIComponent(redirect) +
     "&scope=" + encodeURIComponent("repo read:user") +
