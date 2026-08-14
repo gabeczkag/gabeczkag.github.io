@@ -16,23 +16,21 @@ async function exchange(code) {
   }
   const tokRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      client_id: CLIENT_ID,
-      client_secret: GITHUB_CLIENT_SECRET,
-      code,
-      redirect_uri: WORKER_URL + "/callback"
-    })
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: "client_id=" + encodeURIComponent(CLIENT_ID) +
+      "&client_secret=" + encodeURIComponent(GITHUB_CLIENT_SECRET) +
+      "&code=" + encodeURIComponent(code) +
+      "&redirect_uri=" + encodeURIComponent(WORKER_URL + "/callback")
   });
   const raw = await tokRes.text();
   let j;
   try {
     j = JSON.parse(raw);
   } catch (e) {
-    throw new Error("GitHub (" + tokRes.status + "): " + raw);
+    j = Object.fromEntries(new URLSearchParams(raw));
   }
   if (!j.access_token) {
-    throw new Error("Brak tokena (" + tokRes.status + "): " + raw);
+    throw new Error("EXCHANGE GitHub (" + tokRes.status + "): " + raw);
   }
   return j.access_token;
 }
@@ -63,27 +61,29 @@ async function handle(req) {
     if (!code || !state || !m || m[1] !== state) {
       return new Response("Bad state", { status: 400 });
     }
-    let access;
+
+    let access, step = "exchange";
     try {
       access = await exchange(code);
-    } catch (e) {
-      return new Response("Exchange error: " + e.message, { status: 502 });
-    }
-    let me;
-    try {
-      me = await (await fetch("https://api.github.com/user", {
+      step = "user";
+      const ures = await fetch("https://api.github.com/user", {
         headers: { Authorization: "Bearer " + access, Accept: "application/json" }
-      })).json();
+      });
+      const uraw = await ures.text();
+      let me;
+      try { me = JSON.parse(uraw); } catch (e) {
+        throw new Error("USER GitHub (" + ures.status + "): " + uraw);
+      }
+      if (me.login?.toLowerCase() !== OWNER) {
+        throw new Error("Brak dostepu dla: " + me.login);
+      }
+      return new Response(null, {
+        status: 302,
+        headers: { ...cors, location: SITE_ORIGIN + "/admin/#token=" + encodeURIComponent(access) }
+      });
     } catch (e) {
-      return new Response("User error: " + e.message, { status: 502 });
+      return new Response("Krok: " + step + "\nBlad: " + e.message, { status: 502 });
     }
-    if (me.login?.toLowerCase() !== OWNER) {
-      return new Response("Brak dostepu: " + me.login, { status: 403 });
-    }
-    return new Response(null, {
-      status: 302,
-      headers: { ...cors, location: SITE_ORIGIN + "/admin/#token=" + encodeURIComponent(access) }
-    });
   }
 
   if (url.pathname === "/me") {
