@@ -10,6 +10,33 @@ function json(data, status = 200, headers = {}) {
   });
 }
 
+async function exchange(code) {
+  if (typeof GITHUB_CLIENT_SECRET === "undefined") {
+    throw new Error("BRAK SEKRETU GITHUB_CLIENT_SECRET w Cloudflare Variables");
+  }
+  const tokRes = await fetch("https://github.com/login/oauth/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      client_id: CLIENT_ID,
+      client_secret: GITHUB_CLIENT_SECRET,
+      code,
+      redirect_uri: WORKER_URL + "/callback"
+    })
+  });
+  const raw = await tokRes.text();
+  let j;
+  try {
+    j = JSON.parse(raw);
+  } catch (e) {
+    throw new Error("GitHub (" + tokRes.status + "): " + raw);
+  }
+  if (!j.access_token) {
+    throw new Error("Brak tokena (" + tokRes.status + "): " + raw);
+  }
+  return j.access_token;
+}
+
 async function handle(req) {
   const url = new URL(req.url);
   const cors = { "Access-Control-Allow-Origin": "*" };
@@ -36,21 +63,22 @@ async function handle(req) {
     if (!code || !state || !m || m[1] !== state) {
       return new Response("Bad state", { status: 400 });
     }
-    const tokRes = await fetch("https://github.com/login/oauth/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ client_id: CLIENT_ID, client_secret: GITHUB_CLIENT_SECRET, code })
-    });
-    const j = await tokRes.json();
-    const access = j.access_token;
-    if (!access) {
-      return new Response("Brak tokena: " + JSON.stringify(j), { status: 400 });
+    let access;
+    try {
+      access = await exchange(code);
+    } catch (e) {
+      return new Response("Exchange error: " + e.message, { status: 502 });
     }
-    const me = await (await fetch("https://api.github.com/user", {
-      headers: { Authorization: "Bearer " + access, Accept: "application/json" }
-    })).json();
+    let me;
+    try {
+      me = await (await fetch("https://api.github.com/user", {
+        headers: { Authorization: "Bearer " + access, Accept: "application/json" }
+      })).json();
+    } catch (e) {
+      return new Response("User error: " + e.message, { status: 502 });
+    }
     if (me.login?.toLowerCase() !== OWNER) {
-      return new Response("Brak dostepu", { status: 403 });
+      return new Response("Brak dostepu: " + me.login, { status: 403 });
     }
     return new Response(null, {
       status: 302,
