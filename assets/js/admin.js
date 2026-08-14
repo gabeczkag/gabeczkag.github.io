@@ -1,4 +1,5 @@
-const REPO = "gabeczkag/gabeczkaG.github.io";
+const REPO = "gabeczkag/gabeczkag.github.io";
+const OWNER = "gabeczkag";
 const PATH = "projects.json";
 let projects = [];
 let token = "";
@@ -19,6 +20,18 @@ async function loadRemote() {
 async function open() {
   token = $("token").value.trim();
   if (!token) { alert("Wpisz token GitHub."); return; }
+  try {
+    const u = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
+    if (!u.ok) { alert("Nieprawidłowy token lub brak uprawnień."); return; }
+    const me = await u.json();
+    if (me.login.toLowerCase() !== OWNER) {
+      alert("Ten token nie należy do właściciela konta " + OWNER + ". Odmowa dostępu.");
+      return;
+    }
+  } catch (e) {
+    alert("Błąd weryfikacji tożsamości: " + e.message);
+    return;
+  }
   sessionStorage.setItem("gw_token", token);
   let data = await loadRemote();
   if (!data) {
@@ -72,11 +85,13 @@ function edit(i) {
 
 $("edit").addEventListener("submit", e => {
   e.preventDefault();
-  const p = {
-    name: $("name").value.trim(),
-    url: $("url").value.trim(),
-    description: $("desc").value.trim()
-  };
+  const name = $("name").value.trim();
+  const url = $("url").value.trim();
+  const description = $("desc").value.trim();
+  if (!name || name.length > 80) { alert("Nazwa: 1–80 znaków."); return; }
+  if (!/^https?:\/\//i.test(url)) { alert("URL musi zaczynać się od http:// lub https://"); return; }
+  if (description.length > 500) { alert("Opis: maks. 500 znaków."); return; }
+  const p = { name, url, description };
   const i = $("idx").value;
   if (i === "") projects.push(p);
   else projects[+i] = p;
