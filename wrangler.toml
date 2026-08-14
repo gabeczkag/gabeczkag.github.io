@@ -3,14 +3,8 @@ main = "src/worker.js"
 type = "module"
 compatibility_date = "2024-09-23"
 
-[vars]
-GITHUB_CLIENT_ID = "Iv23limKstWLUxYHjNeN"
-INSTALLATION_ID = "4594045"
-WORKER_URL = "https://gabeczkag-github-io.gabeczkaweb-authorization.workers.dev"
-SITE_ORIGIN = "https://gabeczkag.github.io"
-
-# Wartości wrażliwe (secret) ustaw w Cloudflare -> Workers & Pages -> gabeczkaweb-auth -> Settings -> Variables and Secrets:
-#   GITHUB_APP_ID
-#   GITHUB_CLIENT_SECRET
-#   GITHUB_PRIVATE_KEY   (klucz PKCS#8 PEM)
-#   SESSION_SECRET
+# Sekrety (Settings -> Variables and Secrets w Cloudflare):
+#   GITHUB_CLIENT_SECRET   (z OAuth App na GitHubie)
+#   SESSION_SECRET         (dowolny losny ciąg, np. `openssl rand -hex 32`)
+#
+# Reszta konfiguracji (client_id, worker_url, site_origin) jest zahardkodowana w src/worker.js
