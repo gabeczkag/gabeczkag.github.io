@@ -1,4 +1,3 @@
-const CLIENT_ID = "Iv23limKstWLUxYHjNeN";
 const OWNER = "gabeczkag";
 const REPO = "gabeczkag.github.io";
 const PATH = "projects.json";
@@ -10,32 +9,6 @@ let token = sessionStorage.getItem("gw_token") || "";
 
 function b64(str) {
   return btoa(unescape(encodeURIComponent(str)));
-}
-
-async function exchange(code, state) {
-  const saved = sessionStorage.getItem("gw_state");
-  if (state && saved && state !== saved) {
-    $("authmsg").textContent = "Błąd: niezgodny parametr state.";
-    return;
-  }
-  sessionStorage.removeItem("gw_state");
-  try {
-    const r = await fetch("https://github.com/login/oauth/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-      body: "client_id=" + encodeURIComponent(CLIENT_ID) + "&code=" + encodeURIComponent(code)
-    });
-    const j = await r.json();
-    if (j.access_token) {
-      token = j.access_token;
-      sessionStorage.setItem("gw_token", token);
-      await enter();
-    } else {
-      $("authmsg").textContent = "Błąd logowania: " + (j.error_description || j.error || "brak tokena");
-    }
-  } catch (e) {
-    $("authmsg").textContent = "Błąd sieci: " + e.message;
-  }
 }
 
 async function checkAuth() {
@@ -60,7 +33,7 @@ async function enter() {
   } else {
     token = "";
     sessionStorage.removeItem("gw_token");
-    $("authmsg").textContent = "Brak dostępu. Musisz być właścicielem konta " + OWNER + ".";
+    $("authmsg").textContent = "Brak dostępu. Upewnij się, że token ma scope „repo” i należy do konta " + OWNER + ".";
   }
 }
 
@@ -131,15 +104,11 @@ $("edit").addEventListener("submit", e => {
 
 $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 
-$("login").onclick = () => {
-  const state = crypto.randomUUID();
-  sessionStorage.setItem("gw_state", state);
-  const redirect = "https://gabeczkag.github.io/admin/callback/";
-  const url = "https://github.com/login/oauth/authorize?client_id=" + CLIENT_ID +
-    "&redirect_uri=" + encodeURIComponent(redirect) +
-    "&scope=" + encodeURIComponent("repo read:user") +
-    "&state=" + state;
-  location.href = url;
+$("login").onclick = async () => {
+  token = $("token").value.trim();
+  if (!token) { $("authmsg").textContent = "Wpisz token."; return; }
+  sessionStorage.setItem("gw_token", token);
+  await enter();
 };
 
 $("logout").onclick = () => {
@@ -171,13 +140,5 @@ async function save() {
 $("save").onclick = save;
 
 (async () => {
-  const u = new URL(location.href);
-  const code = u.searchParams.get("code");
-  const state = u.searchParams.get("state");
-  if (code) {
-    history.replaceState(null, "", location.pathname);
-    await exchange(code, state);
-  } else {
-    await enter();
-  }
+  await enter();
 })();

@@ -18,9 +18,10 @@
 <main class="admin">
   <section class="admin-auth" id="auth">
     <h2>Logowanie</h2>
-    <p>Zaloguj się przez GitHub, by edytować projekty. Dostęp mają tylko właściciele konta <code>gabeczkag</code>.</p>
+    <p>Wklej GitHub Personal Access Token (scope <code>repo</code>) dla konta <code>gabeczkag</code>, by edytować projekty.</p>
     <div class="admin-form">
-      <button class="btn" id="login">Zaloguj przez GitHub</button>
+      <input type="password" id="token" placeholder="ghp_..." autocomplete="off">
+      <button class="btn" id="login">Zaloguj</button>
     </div>
     <p class="admin-warn" id="authmsg"></p>
   </section>
