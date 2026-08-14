@@ -1,6 +1,7 @@
 :root {
   --bg: #0d1117;
   --bg-elev: #161b22;
+  --bg-elev-2: #1c2230;
   --border: #30363d;
   --text: #e6edf3;
   --text-dim: #8b949e;
@@ -55,6 +56,17 @@ a:hover { color: var(--accent-hover); }
   letter-spacing: 0.5px;
 }
 .brand-accent { color: var(--accent); }
+.brand-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
 
 .nav-menu {
   list-style: none;
@@ -97,36 +109,64 @@ a:hover { color: var(--accent-hover); }
 main { flex: 1; }
 
 .hero {
+  position: relative;
+  background:
+    radial-gradient(1200px 400px at 50% -10%, rgba(88, 166, 255, 0.12), transparent 70%);
+  border-bottom: 1px solid var(--border);
+}
+.hero-inner {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: 5rem 1.25rem 4rem;
   text-align: center;
 }
+.hero-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
 .hero-inner h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 1rem; }
 .hero-sub { color: var(--text-dim); max-width: 640px; margin: 0 auto 2rem; font-size: 1.1rem; }
+.hero-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
 
 .btn {
   display: inline-block;
   background: var(--accent);
   color: #0d1117;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.7rem 1.4rem;
   border-radius: var(--radius);
-  transition: background 0.15s ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 .btn:hover { background: var(--accent-hover); color: #0d1117; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-elev); color: var(--text); }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.projects-count { color: var(--text-dim); font-size: 0.9rem; }
 
 .projects, .about, .contact {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: 3rem 1.25rem;
 }
-.projects h2, .about h2, .contact h2 {
-  font-size: 1.6rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-}
+.projects h2, .about h2, .contact h2 { font-size: 1.6rem; }
 
 .projects-grid {
   display: grid;
@@ -149,6 +189,16 @@ main { flex: 1; }
 .project-card p { color: var(--text-dim); flex: 1; font-size: 0.95rem; }
 .project-card .project-link { font-weight: 600; align-self: flex-start; }
 
+.projects-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-dim);
+  padding: 3rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.projects-empty a { font-weight: 600; }
+
 .about p, .contact p { color: var(--text-dim); max-width: 720px; }
 
 .site-footer {
@@ -159,6 +209,70 @@ main { flex: 1; }
   font-size: 0.9rem;
 }
 .site-footer a { color: var(--text-dim); text-decoration: underline; }
+
+.admin {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  width: 100%;
+}
+.admin-auth p, .admin-panel p { color: var(--text-dim); margin-bottom: 1rem; }
+.admin-form { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; }
+.admin-auth input {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  font-size: 1rem;
+}
+.admin-warn { font-size: 0.85rem; margin-top: 1rem; }
+.admin-warn code { color: var(--accent); }
+
+.admin-panel { margin-top: 2rem; }
+.admin-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem; }
+.admin-list li {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.admin-list strong { display: block; font-size: 1.05rem; }
+.admin-list .adm-url { color: var(--text-dim); font-size: 0.85rem; word-break: break-all; }
+.admin-list p { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.25rem; }
+.adm-row { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+.admin-edit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.admin-edit h3, .admin-edit .admin-actions, .admin-edit .admin-save { grid-column: 1 / -1; }
+.admin-edit label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.9rem; color: var(--text-dim); }
+.admin-edit input, .admin-edit textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+.admin-edit input:focus, .admin-edit textarea:focus { outline: none; border-color: var(--accent); }
+.admin-actions { display: flex; gap: 0.75rem; }
+.admin-save { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.admin-save #status { color: var(--accent); font-size: 0.9rem; }
 
 @media (max-width: 720px) {
   .nav-toggle { display: flex; }
@@ -177,5 +291,5 @@ main { flex: 1; }
   }
   .nav-menu.open { display: flex; }
   .nav-menu li { width: 100%; }
-  .nav-projects-label { margin-top: 0.5rem; }
+  .admin-edit { grid-template-columns: 1fr; }
 }

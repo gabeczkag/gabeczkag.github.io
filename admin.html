@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Panel administratora GabeczkaGWeb">
+<title>Admin — GabeczkaGWeb</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="navbar" aria-label="Nawigacja panelu">
+    <a class="brand" href="index.html">GabeczkaG<span class="brand-accent">Web</span> <span class="brand-tag">admin</span></a>
+  </nav>
+</header>
+
+<main class="admin">
+  <section class="admin-auth">
+    <h2>Logowanie</h2>
+    <p>Wpisz token GitHub (zakres <code>repo</code>) konta GabeczkaG, by edytować projekty.</p>
+    <div class="admin-form">
+      <input type="password" id="token" placeholder="ghp_..." autocomplete="off">
+      <button class="btn" id="open">Otwórz panel</button>
+    </div>
+    <p class="admin-warn">Token pozostaje tylko w tej karcie przeglądarki (sessionStorage) i służy do zapisu przez API GitHuba. Nie używaj na publicznych komputerach i unieważnij token po sesji.</p>
+  </section>
+
+  <section class="admin-panel" id="panel" hidden>
+    <div class="section-head">
+      <h2>Projekty</h2>
+      <span class="projects-count" id="cnt"></span>
+    </div>
+    <ul class="admin-list" id="list"></ul>
+
+    <h3>Dodaj / edytuj projekt</h3>
+    <form class="admin-edit" id="edit">
+      <input type="hidden" id="idx">
+      <label>Nazwa<input id="name" required placeholder="Np. Moja Aplikacja"></label>
+      <label>URL<input id="url" type="url" required placeholder="https://github.com/GabeczkaG/..."></label>
+      <label style="grid-column:1 / -1">Opis<textarea id="desc" rows="3" placeholder="Krótki opis projektu"></textarea></label>
+      <div class="admin-actions">
+        <button type="submit" class="btn">Zapisz</button>
+        <button type="button" class="btn btn-ghost" id="cancel">Anuluj</button>
+      </div>
+    </form>
+
+    <div class="admin-save">
+      <button class="btn" id="saveGh">Zapisz do GitHub</button>
+      <button class="btn btn-ghost" id="saveLocal">Tylko lokalnie (podgląd)</button>
+      <span id="status"></span>
+    </div>
+
+    <p style="margin-top:1.5rem"><a href="index.html">← powrót do strony</a></p>
+  </section>
+</main>
+
+<script src="assets/js/admin.js" defer></script>
+</body>
+</html>

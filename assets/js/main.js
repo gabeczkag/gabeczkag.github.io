@@ -1,13 +1,27 @@
-const projects = [
-  { name: "Projekt Alpha", url: "https://github.com/GabeczkaG", description: "Krótki opis projektu Alpha. Zmień nazwę, URL i opis." },
-  { name: "Projekt Beta", url: "https://github.com/GabeczkaG", description: "Krótki opis projektu Beta. Tu wpisz, czym się zajmuje." },
-  { name: "Projekt Gamma", url: "https://github.com/GabeczkaG", description: "Krótki opis projektu Gamma. Dodaj kolejne obiekty do tablicy." }
-];
+const FALLBACK = [];
 
-function renderNav() {
-  const navSlot = document.querySelector("[data-projects-nav]");
-  if (!navSlot) return;
-  navSlot.innerHTML = "";
+async function loadProjects() {
+  try {
+    const r = await fetch("projects.json", { cache: "no-store" });
+    if (r.ok) {
+      const d = await r.json();
+      if (Array.isArray(d) && d.length) return d;
+    }
+  } catch (e) {}
+  try {
+    const ls = localStorage.getItem("gw_projects");
+    if (ls) {
+      const d = JSON.parse(ls);
+      if (Array.isArray(d)) return d;
+    }
+  } catch (e) {}
+  return FALLBACK;
+}
+
+function renderNav(projects) {
+  const slot = document.querySelector("[data-projects-nav]");
+  if (!slot) return;
+  slot.innerHTML = "";
   projects.forEach(p => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -16,26 +30,35 @@ function renderNav() {
     a.target = "_blank";
     a.rel = "noopener";
     li.appendChild(a);
-    navSlot.appendChild(li);
+    slot.appendChild(li);
   });
 }
 
-function renderGrid() {
+function renderGrid(projects) {
   const grid = document.querySelector("[data-projects-grid]");
   if (!grid) return;
   grid.innerHTML = "";
+  const count = document.querySelector("[data-projects-count]");
+  if (!projects.length) {
+    const empty = document.createElement("div");
+    empty.className = "projects-empty";
+    empty.innerHTML = '<p>Brak projektów do wyświetlenia.</p><p>Dodaj je w <a href="admin.html">panelu administratora</a>.</p>';
+    grid.appendChild(empty);
+    if (count) count.textContent = "0 projektów";
+    return;
+  }
   projects.forEach(p => {
     const card = document.createElement("article");
     card.className = "project-card";
-    card.innerHTML =
-      '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
+    card.innerHTML = '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
     card.querySelector("h3").textContent = p.name;
-    card.querySelector("p").textContent = p.description;
+    card.querySelector("p").textContent = p.description || "";
     const link = card.querySelector(".project-link");
     link.href = p.url;
     link.textContent = "Otwórz →";
     grid.appendChild(card);
   });
+  if (count) count.textContent = projects.length + (projects.length === 1 ? " projekt" : " projektów");
 }
 
 function setupMenu() {
@@ -59,9 +82,10 @@ function setYear() {
   if (el) el.textContent = new Date().getFullYear();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderNav();
-  renderGrid();
+document.addEventListener("DOMContentLoaded", async () => {
+  const projects = await loadProjects();
+  renderNav(projects);
+  renderGrid(projects);
   setupMenu();
   setYear();
 });
