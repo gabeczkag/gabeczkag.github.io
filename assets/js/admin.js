@@ -5,8 +5,19 @@ const WORKER_URL = "https://gabeczkag-github-io.gabeczkaweb-authorization.worker
 
 const $ = id => document.getElementById(id);
 
+function getToken() {
+  const m = document.cookie.match(/(?:^|;\s*)gw_token=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+function setToken(t) {
+  document.cookie = "gw_token=" + encodeURIComponent(t) + "; max-age=2592000; path=/; Secure; SameSite=Lax";
+}
+function clearToken() {
+  document.cookie = "gw_token=; max-age=0; path=/; Secure; SameSite=Lax";
+}
+
 let projects = [];
-let token = sessionStorage.getItem("gw_token") || "";
+let token = getToken();
 
 function b64(str) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -33,7 +44,7 @@ async function enter() {
     await load();
   } else {
     token = "";
-    sessionStorage.removeItem("gw_token");
+    clearToken();
     $("authmsg").textContent = "Brak dostępu. Upewnij się, że token ma scope „repo” i należy do konta " + OWNER + ".";
   }
 }
@@ -112,13 +123,13 @@ $("login").onclick = () => {
 $("loginToken").onclick = async () => {
   token = $("token").value.trim();
   if (!token) { $("authmsg").textContent = "Wpisz token."; return; }
-  sessionStorage.setItem("gw_token", token);
+  setToken(token);
   await enter();
 };
 
 $("logout").onclick = () => {
   token = "";
-  sessionStorage.removeItem("gw_token");
+  clearToken();
   location.reload();
 };
 
@@ -175,7 +186,7 @@ $("save").onclick = save;
 (async () => {
   if (location.hash.startsWith("#token=")) {
     token = decodeURIComponent(location.hash.slice(7));
-    sessionStorage.setItem("gw_token", token);
+    setToken(token);
     history.replaceState(null, "", location.pathname);
     await enter();
   } else {
