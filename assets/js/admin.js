@@ -18,6 +18,7 @@ function clearToken() {
 
 let projects = [];
 let token = getToken();
+let quickData = null;
 
 function b64(str) {
   return btoa(unescape(encodeURIComponent(str)));
@@ -145,13 +146,35 @@ $("quickAdd").onclick = async () => {
     const r = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
     if (!r.ok) { $("quickmsg").textContent = "Nie znaleziono repo (" + r.status + "). Sprawdź link i czy repo jest publiczne."; return; }
     const repo = await r.json();
-    projects.push({ name: repo.name, url: repo.html_url, description: repo.description || "" });
-    render();
-    $("repoUrl").value = "";
-    $("quickmsg").textContent = "Dodano „" + repo.name + "”. Kliknij „Zapisz do GitHub”, by zapisać.";
+    quickData = { name: repo.name, url: repo.html_url, description: repo.description || "" };
+    $("qp-name").textContent = quickData.name;
+    $("qp-url").textContent = quickData.url;
+    $("qp-url").href = quickData.url;
+    $("qp-desc").textContent = quickData.description || "Brak opisu";
+    $("qp-desc-edit").value = quickData.description || "";
+    $("quick-preview").hidden = false;
+    $("quickmsg").textContent = "";
   } catch (e) {
     $("quickmsg").textContent = "Błąd sieci: " + e.message;
   }
+};
+
+$("qp-add").onclick = () => {
+  if (!quickData) return;
+  const name = quickData.name;
+  const description = $("qp-desc-edit").value.trim();
+  projects.push({ name: quickData.name, url: quickData.url, description });
+  render();
+  $("quick-preview").hidden = true;
+  quickData = null;
+  $("repoUrl").value = "";
+  $("quickmsg").textContent = "Dodano „" + name + "”. Kliknij „Zapisz do GitHub”, by zapisać.";
+};
+
+$("qp-cancel").onclick = () => {
+  $("quick-preview").hidden = true;
+  quickData = null;
+  $("quickmsg").textContent = "";
 };
 
 async function save() {

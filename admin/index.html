@@ -53,6 +53,19 @@
       <input id="repoUrl" type="text" placeholder="https://github.com/gabeczkag/nazwa-repo">
       <button class="btn btn-ghost" id="quickAdd" type="button">Pobierz dane</button>
     </div>
+    <div id="quick-preview" class="quick-preview" hidden>
+      <h4>Podgląd projektu</h4>
+      <div class="quick-preview-card">
+        <strong id="qp-name"></strong>
+        <a id="qp-url" href="#" target="_blank" rel="noopener"></a>
+        <p id="qp-desc"></p>
+        <label>Opis (możesz edytować)<textarea id="qp-desc-edit" rows="2"></textarea></label>
+        <div class="admin-actions">
+          <button type="button" class="btn" id="qp-add">Dodaj do listy</button>
+          <button type="button" class="btn btn-ghost" id="qp-cancel">Anuluj</button>
+        </div>
+      </div>
+    </div>
     <p class="admin-warn" id="quickmsg"></p>
 
     <div class="admin-save">
