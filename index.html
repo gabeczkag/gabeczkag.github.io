@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Hub projektów GabeczkaG — zbiór moich repozytoriów i prac.">
+<title>GabeczkaGWeb — Moje projekty</title>
+<link rel="preconnect" href="https://fonts.google.com">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <nav class="navbar" aria-label="Główna nawigacja">
+    <a class="brand" href="#top">GabeczkaG<span class="brand-accent">Web</span></a>
+
+    <button class="nav-toggle" aria-label="Przełącz menu" aria-expanded="false" aria-controls="nav-menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="nav-menu" id="nav-menu">
+      <li><a href="#top">Start</a></li>
+      <li class="nav-projects-label">Projekty:</li>
+      <li data-projects-nav></li>
+      <li><a href="#about">O mnie</a></li>
+      <li><a href="#contact">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-inner">
+      <h1>Witaj w moim hubie projektów</h1>
+      <p class="hero-sub">Tu zbieram i linkuję wszystko, nad czym pracuję. Wybierz projekt z nawigacji lub z listy poniżej.</p>
+      <a class="btn" href="#projects">Zobacz projekty</a>
+    </div>
+  </section>
+
+  <section class="projects" id="projects">
+    <h2>Projekty</h2>
+    <div class="projects-grid" data-projects-grid></div>
+  </section>
+
+  <section class="about" id="about">
+    <h2>O mnie</h2>
+    <p>Tu wpisz krótki opis siebie — kim jesteś, czym się zajmujesz, czego dotyczą Twoje projekty. Ten tekst to placeholder do edycji.</p>
+  </section>
+
+  <section class="contact" id="contact">
+    <h2>Kontakt</h2>
+    <p>Skontaktuj się ze mną przez GitHub: <a href="https://github.com/GabeczkaGWeb">@GabeczkaGWeb</a>.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; <span data-year></span> GabeczkaG. Rozpowszechnianie na licencji <a href="LICENSE">GNU GPL v3</a>.</p>
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
