@@ -16,7 +16,7 @@ async function exchange(code) {
   }
   const tokRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", "User-Agent": "gabeczkag-web-worker" },
     body: "client_id=" + encodeURIComponent(CLIENT_ID) +
       "&client_secret=" + encodeURIComponent(GITHUB_CLIENT_SECRET) +
       "&code=" + encodeURIComponent(code) +
@@ -67,7 +67,7 @@ async function handle(req) {
       access = await exchange(code);
       step = "user";
       const ures = await fetch("https://api.github.com/user", {
-        headers: { Authorization: "Bearer " + access, Accept: "application/json" }
+        headers: { Authorization: "Bearer " + access, Accept: "application/json", "User-Agent": "gabeczkag-web-worker" }
       });
       const uraw = await ures.text();
       let me;
