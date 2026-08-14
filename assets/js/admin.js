@@ -1,4 +1,4 @@
-const WORKER = "https://gabeczkaweb-authorization.karczmarczykgrzegorz78.workers.dev";
+const WORKER = "https://gabeczkag-github-io.gabeczkaweb-authorization.workers.dev";
 const $ = id => document.getElementById(id);
 
 let projects = [];

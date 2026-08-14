@@ -5,7 +5,7 @@ compatibility_date = "2024-09-23"
 [vars]
 GITHUB_CLIENT_ID = "WPISZ_CLIENT_ID_Z_GITHUB_APP"
 INSTALLATION_ID = "WPISZ_INSTALLATION_ID"
-WORKER_URL = "https://gabeczkaweb-authorization.karczmarczykgrzegorz78.workers.dev"
+WORKER_URL = "https://gabeczkag-github-io.gabeczkaweb-authorization.workers.dev"
 SITE_ORIGIN = "https://gabeczkag.github.io"
 
 # Wartości wrażliwe (secret) ustaw w Cloudflare -> Workers & Pages -> gabeczkaweb-auth -> Settings -> Variables and Secrets:
