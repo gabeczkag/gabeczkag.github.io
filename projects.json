@@ -4,11 +4,6 @@
       "name": "gabeczkag.github.io",
       "url": "https://github.com/gabeczkag/gabeczkag.github.io",
       "description": "HUB"
-    },
-    {
-      "name": "freellmapi",
-      "url": "https://github.com/tashfeenahmed/freellmapi",
-      "description": "OpenAI-compatible proxy that stacks the free tiers of 28 LLM providers (~4B tokens/month) behind one /v1 endpoint — plus any custom OpenAI-compatible endpoint. Smart routing, automatic failover, encrypted keys. Personal experimentation only."
     }
   ],
   "effects": {
@@ -16,5 +11,11 @@
     "heroBlobs": true,
     "cardHover": true
   },
-  "favorites": []
+  "favorites": [
+    {
+      "name": "freellmapi",
+      "url": "https://github.com/tashfeenahmed/freellmapi",
+      "description": "OpenAI-compatible proxy that stacks the free tiers of 28 LLM providers (~4B tokens/month) behind one /v1 endpoint — plus any custom OpenAI-compatible endpoint. Smart routing, automatic failover, encrypted keys. Personal experimentation only."
+    }
+  ]
 }
