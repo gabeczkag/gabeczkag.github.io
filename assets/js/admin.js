@@ -122,6 +122,27 @@ $("logout").onclick = () => {
   location.reload();
 };
 
+$("quickAdd").onclick = async () => {
+  const input = $("repoUrl").value.trim();
+  const m = input.match(/github\.com\/([^\/\s?#]+)\/([^\/\s?#]+)/);
+  if (!m) { $("quickmsg").textContent = "Podaj poprawny link do repozytorium GitHub."; return; }
+  const owner = m[1], repoName = m[2].replace(/\.git$/, "");
+  $("quickmsg").textContent = "Pobieranie danych repozytorium...";
+  try {
+    const headers = { Accept: "application/vnd.github+json" };
+    if (token) headers.Authorization = "Bearer " + token;
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
+    if (!r.ok) { $("quickmsg").textContent = "Nie znaleziono repo (" + r.status + "). Sprawdź link i czy repo jest publiczne."; return; }
+    const repo = await r.json();
+    projects.push({ name: repo.name, url: repo.html_url, description: repo.description || "" });
+    render();
+    $("repoUrl").value = "";
+    $("quickmsg").textContent = "Dodano „" + repo.name + "”. Kliknij „Zapisz do GitHub”, by zapisać.";
+  } catch (e) {
+    $("quickmsg").textContent = "Błąd sieci: " + e.message;
+  }
+};
+
 async function save() {
   if (!token) { $("status").textContent = "Nie jesteś zalogowany."; return; }
   $("status").textContent = "Zapisywanie...";
@@ -136,8 +157,15 @@ async function save() {
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
       body: JSON.stringify({ message: "Aktualizacja projektow (panel)", content, sha: data.sha })
     });
-    if (put.ok) $("status").textContent = "Zapisano. Strona zaktualizuje się za chwilę.";
-    else { const e = await put.json().catch(() => ({})); $("status").textContent = "Błąd: " + (e.message || put.status); }
+    if (put.ok) $("status").textContent = "Zapisano ✓ Strona odświeży się za 1–2 min (GitHub Pages).";
+    else {
+      const e = await put.json().catch(() => ({}));
+      let msg = e.message || ("HTTP " + put.status);
+      if (put.status === 401 || put.status === 403) {
+        msg += " — token musi mieć uprawnienia do zapisu. Przy logowaniu przez GitHub upewnij się, że to OAuth App (nie GitHub App) z scope 'repo'; przy PAT użyj tokena klasycznego z 'repo'.";
+      }
+      $("status").textContent = "Błąd: " + msg;
+    }
   } catch (e) {
     $("status").textContent = "Błąd sieci: " + e.message;
   }
