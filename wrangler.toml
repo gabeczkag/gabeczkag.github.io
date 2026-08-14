@@ -1,5 +1,6 @@
 name = "gabeczkaweb-authorization"
 main = "src/worker.js"
+type = "module"
 compatibility_date = "2024-09-23"
 
 [vars]

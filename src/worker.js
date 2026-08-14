@@ -94,6 +94,15 @@ async function saveProjects(projects, env) {
 
 export default {
   async fetch(req, env) {
+    try {
+      return await handle(req, env);
+    } catch (e) {
+      return json({ error: "internal", detail: String(e && e.message || e) }, 500);
+    }
+  }
+};
+
+async function handle(req, env) {
     const url = new URL(req.url);
     const cors = corsHeaders(env.SITE_ORIGIN);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
@@ -148,4 +157,3 @@ export default {
 
     return json({ error: "not found" }, 404, cors);
   }
-};
