@@ -16,24 +16,13 @@
 </header>
 
 <main class="admin">
-  <section class="admin-key" id="keygate">
-    <h2>Dostęp</h2>
-    <p>Wpisz klucz dostępu (<code>AUTH_KEY_OR_PASSWORD</code>), by odblokować panel administratora.</p>
-    <div class="admin-form">
-      <input type="password" id="authkey" placeholder="klucz dostępu" autocomplete="off">
-      <button class="btn" id="authOk">Dalej</button>
-    </div>
-    <p class="admin-warn" id="keyerr"></p>
-  </section>
-
-  <section class="admin-auth" id="authstep" hidden>
+  <section class="admin-auth" id="auth">
     <h2>Logowanie</h2>
-    <p>Wpisz token GitHub (zakres <code>repo</code>) konta GabeczkaG, by edytować projekty.</p>
+    <p>Zaloguj się przez GitHub, by edytować projekty. Dostęp mają tylko właściciele konta <code>gabeczkag</code>.</p>
     <div class="admin-form">
-      <input type="password" id="token" placeholder="ghp_..." autocomplete="off">
-      <button class="btn" id="open">Otwórz panel</button>
+      <button class="btn" id="login">Zaloguj przez GitHub</button>
     </div>
-    <p class="admin-warn">Token pozostaje tylko w tej karcie przeglądarki (sessionStorage) i służy do zapisu przez API GitHuba. Nie używaj na publicznych komputerach i unieważnij token po sesji.</p>
+    <p class="admin-warn" id="authmsg"></p>
   </section>
 
   <section class="admin-panel" id="panel" hidden>
@@ -47,7 +36,7 @@
     <form class="admin-edit" id="edit">
       <input type="hidden" id="idx">
       <label>Nazwa<input id="name" required placeholder="Np. Moja Aplikacja"></label>
-      <label>URL<input id="url" type="url" required placeholder="https://github.com/GabeczkaG/..."></label>
+      <label>URL<input id="url" type="url" required placeholder="https://github.com/gabeczkag/..."></label>
       <label style="grid-column:1 / -1">Opis<textarea id="desc" rows="3" placeholder="Krótki opis projektu"></textarea></label>
       <div class="admin-actions">
         <button type="submit" class="btn">Zapisz</button>
@@ -56,8 +45,8 @@
     </form>
 
     <div class="admin-save">
-      <button class="btn" id="saveGh">Zapisz do GitHub</button>
-      <button class="btn btn-ghost" id="saveLocal">Tylko lokalnie (podgląd)</button>
+      <button class="btn" id="save">Zapisz do GitHub</button>
+      <button class="btn btn-ghost" id="logout">Wyloguj</button>
       <span id="status"></span>
     </div>
 

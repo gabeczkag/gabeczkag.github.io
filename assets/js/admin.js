@@ -1,59 +1,36 @@
-const REPO = "gabeczkag/gabeczkag.github.io";
-const OWNER = "gabeczkag";
-const PATH = "projects.json";
-const AUTH_KEY_OR_PASSWORD = "__AUTH_KEY_PLACEHOLDER__";
-let projects = [];
-let token = "";
-
-function checkKey() {
-  const v = $("authkey").value;
-  if (v !== AUTH_KEY_OR_PASSWORD) {
-    $("keyerr").textContent = "Nieprawidłowy klucz dostępu.";
-    return;
-  }
-  $("keygate").hidden = true;
-  $("authstep").hidden = false;
-  $("authkey").value = "";
-}
-
+const WORKER = "https://gabeczkaweb-auth.workers.dev";
 const $ = id => document.getElementById(id);
 
-async function loadRemote() {
-  try {
-    const r = await fetch(PATH, { cache: "no-store" });
-    if (r.ok) {
-      const d = await r.json();
-      if (Array.isArray(d)) return d;
-    }
-  } catch (e) {}
-  return null;
+let projects = [];
+let session = sessionStorage.getItem("gw_session") || "";
+
+function parseHash() {
+  if (location.hash.startsWith("#token=")) {
+    session = decodeURIComponent(location.hash.slice(7));
+    sessionStorage.setItem("gw_session", session);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
 }
 
-async function open() {
-  token = $("token").value.trim();
-  if (!token) { alert("Wpisz token GitHub."); return; }
+async function checkAuth() {
+  if (!session) return false;
   try {
-    const u = await fetch("https://api.github.com/user", { headers: { Authorization: `token ${token}` } });
-    if (!u.ok) { alert("Nieprawidłowy token lub brak uprawnień."); return; }
-    const me = await u.json();
-    if (me.login.toLowerCase() !== OWNER) {
-      alert("Ten token nie należy do właściciela konta " + OWNER + ". Odmowa dostępu.");
-      return;
-    }
+    const r = await fetch(WORKER + "/me", { headers: { Authorization: "Bearer " + session } });
+    const j = await r.json();
+    return !!j.auth;
   } catch (e) {
-    alert("Błąd weryfikacji tożsamości: " + e.message);
-    return;
+    return false;
   }
-  sessionStorage.setItem("gw_token", token);
-  let data = await loadRemote();
-  if (!data) {
-    try {
-      const ls = localStorage.getItem("gw_projects");
-      if (ls) data = JSON.parse(ls);
-    } catch (e) {}
-  }
-  projects = Array.isArray(data) ? data : [];
-  $("panel").hidden = false;
+}
+
+async function load() {
+  try {
+    const r = await fetch("projects.json", { cache: "no-store" });
+    if (r.ok) {
+      const d = await r.json();
+      if (Array.isArray(d)) projects = d;
+    }
+  } catch (e) {}
   render();
 }
 
@@ -63,9 +40,8 @@ function render() {
   list.innerHTML = "";
   projects.forEach((p, i) => {
     const li = document.createElement("li");
-
     const info = document.createElement("div");
-    info.innerHTML = '<strong></strong><span class="adm-url"></span><p></p>';
+    info.innerHTML = "<strong></strong><span class=\"adm-url\"></span><p></p>";
     info.querySelector("strong").textContent = p.name;
     info.querySelector(".adm-url").textContent = p.url;
     info.querySelector("p").textContent = p.description || "";
@@ -114,49 +90,39 @@ $("edit").addEventListener("submit", e => {
 
 $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 
-function saveLocal() {
-  localStorage.setItem("gw_projects", JSON.stringify(projects));
-  $("status").textContent = "Zapisano lokalnie. Odśwież stronę główną, by zobaczyć.";
-}
+$("login").onclick = () => { window.location = WORKER + "/login"; };
 
-async function saveGh() {
-  if (!token) { alert("Brak tokena."); return; }
-  const body = JSON.stringify(projects, null, 2);
-  const enc = btoa(unescape(encodeURIComponent(body)));
+$("logout").onclick = () => {
+  session = "";
+  sessionStorage.removeItem("gw_session");
+  location.reload();
+};
+
+async function save() {
+  if (!session) { $("status").textContent = "Nie jesteś zalogowany."; return; }
+  $("status").textContent = "Zapisywanie...";
   try {
-    const get = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
-      headers: { Authorization: `token ${token}` }
+    const r = await fetch(WORKER + "/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + session },
+      body: JSON.stringify(projects)
     });
-    const sha = get.ok ? (await get.json()).sha : undefined;
-    const put = await fetch(`https://api.github.com/repos/${REPO}/contents/${PATH}`, {
-      method: "PUT",
-      headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: "Aktualizacja projektów (panel admin)",
-        content: enc,
-        sha
-      })
-    });
-    if (put.ok) {
-      localStorage.removeItem("gw_projects");
-      $("status").textContent = "Zapisano do GitHub. Strona zaktualizuje się po kilku sekundach.";
-    } else {
-      const j = await put.json().catch(() => ({}));
-      $("status").textContent = "Błąd: " + (j.message || put.status);
-    }
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.ok) $("status").textContent = "Zapisano. Strona zaktualizuje się za chwilę.";
+    else $("status").textContent = "Błąd: " + (j.error || r.status);
   } catch (e) {
     $("status").textContent = "Błąd sieci: " + e.message;
   }
 }
+$("save").onclick = save;
 
-$("authOk").onclick = checkKey;
-$("authkey").addEventListener("keydown", e => { if (e.key === "Enter") checkKey(); });
-$("open").onclick = open;
-$("saveGh").onclick = saveGh;
-$("saveLocal").onclick = saveLocal;
-$("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
-
-(function init() {
-  const t = sessionStorage.getItem("gw_token");
-  if (t) $("token").value = t;
+(async () => {
+  parseHash();
+  if (await checkAuth()) {
+    $("auth").hidden = true;
+    $("panel").hidden = false;
+    await load();
+  } else {
+    sessionStorage.removeItem("gw_session");
+  }
 })();

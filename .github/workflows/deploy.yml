@@ -19,10 +19,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Inject secret and build site
+      - name: Build site
         run: python build.py
-        env:
-          AUTH_KEY_OR_PASSOWRD: ${{ secrets.AUTH_KEY_OR_PASSOWRD }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
