@@ -45,6 +45,7 @@ async function enter() {
     $("auth").hidden = true;
     $("panel").hidden = false;
     await load();
+    renderImageExplorer();
   } else {
     token = "";
     clearToken();
@@ -87,50 +88,52 @@ function renderImageExplorer() {
   const grid = $("imageExplorerGrid");
   if (!grid) return;
   grid.innerHTML = '<p class="admin-warn">Ładowanie...</p>';
-  fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/assets/images`, {
-    headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
-  })
-  .then(r => {
-    if (r.status === 404) {
-      grid.innerHTML = '<p class="admin-warn">Katalog assets/images/ jeszcze nie istnieje na GitHubie. Wgraj obraz, aby go utworzyć.</p>';
-      return null;
-    }
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  })
-  .then(files => {
-    if (!files) return;
-    grid.innerHTML = "";
-    if (!Array.isArray(files) || !files.length) {
-      grid.innerHTML = '<p class="admin-warn">Brak obrazów w assets/images/</p>';
-      return;
-    }
-    files.forEach(f => {
-      const card = document.createElement("div");
-      card.className = "explorer-card";
-      const img = document.createElement("img");
-      img.src = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/assets/images/${f.name}`;
-      img.alt = f.name;
-      img.loading = "lazy";
-      const name = document.createElement("span");
-      name.className = "explorer-name";
-      name.textContent = f.name;
-      const use = document.createElement("button");
-      use.type = "button";
-      use.className = "btn btn-ghost";
-      use.textContent = "Użyj";
-      use.onclick = () => {
-        $("image").value = `assets/images/${f.name}`;
-        $("imagePreviewImg").src = img.src;
-        $("imagePreview").hidden = false;
-      };
-      card.append(img, name, use);
-      grid.appendChild(card);
+  const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/assets/images`;
+  fetch(url, { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" } })
+    .then(r => {
+      console.log("[imageExplorer] status", r.status);
+      if (r.status === 404) {
+        grid.innerHTML = '<p class="admin-warn">Katalog assets/images/ jeszcze nie istnieje na GitHubie. Wgraj obraz, aby go utworzyć.</p>';
+        return null;
+      }
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(files => {
+      console.log("[imageExplorer] files", files);
+      if (!files) return;
+      grid.innerHTML = "";
+      if (!Array.isArray(files) || !files.length) {
+        grid.innerHTML = '<p class="admin-warn">Brak obrazów w assets/images/</p>';
+        return;
+      }
+      files.forEach(f => {
+        const card = document.createElement("div");
+        card.className = "explorer-card";
+        const img = document.createElement("img");
+        img.src = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/assets/images/${f.name}`;
+        img.alt = f.name;
+        img.loading = "lazy";
+        const name = document.createElement("span");
+        name.className = "explorer-name";
+        name.textContent = f.name;
+        const use = document.createElement("button");
+        use.type = "button";
+        use.className = "btn btn-ghost";
+        use.textContent = "Użyj";
+        use.onclick = () => {
+          $("image").value = `assets/images/${f.name}`;
+          $("imagePreviewImg").src = img.src;
+          $("imagePreview").hidden = false;
+        };
+        card.append(img, name, use);
+        grid.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.warn("[imageExplorer] error", err);
+      grid.innerHTML = '<p class="admin-warn">Nie udało się załadować obrazów. Sprawdź konsolę i czy jesteś zalogowany.</p>';
     });
-  })
-  .catch(() => {
-    grid.innerHTML = '<p class="admin-warn">Nie udało się załadować obrazów. Sprawdź, czy jesteś zalogowany.</p>';
-  });
 }
 
 function render() {
