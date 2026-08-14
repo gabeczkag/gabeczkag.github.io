@@ -93,7 +93,27 @@ function renderImageExplorer() {
     .then(r => {
       console.log("[imageExplorer] status", r.status);
       if (r.status === 404) {
-        grid.innerHTML = '<p class="admin-warn">Katalog assets/images/ jeszcze nie istnieje na GitHubie. Wgraj obraz, aby go utworzyć.</p>';
+        grid.innerHTML = "";
+        const presetsTitle = document.createElement("p");
+        presetsTitle.className = "image-explorer-title";
+        presetsTitle.textContent = "Ikony FontAwesome (presety)";
+        grid.appendChild(presetsTitle);
+        const presetsGrid = document.createElement("div");
+        presetsGrid.className = "image-explorer-grid fa-presets-grid";
+        presetsGrid.innerHTML = `{preset_html}`;
+        presetsGrid.querySelectorAll(".fa-preset").forEach(card => {
+          card.addEventListener("click", () => {
+            const url = card.getAttribute("data-url");
+            $("imagePreviewImg").src = url;
+            $("imagePreview").hidden = false;
+            $("image").value = url;
+          });
+        });
+        grid.appendChild(presetsGrid);
+        const warn = document.createElement("p");
+        warn.className = "admin-warn";
+        warn.textContent = "Katalog assets/images/ jeszcze nie istnieje na GitHubie. Wgraj obraz, aby go utworzyć.";
+        grid.appendChild(warn);
         return null;
       }
       if (!r.ok) throw new Error("HTTP " + r.status);
@@ -101,12 +121,40 @@ function renderImageExplorer() {
     })
     .then(files => {
       console.log("[imageExplorer] files", files);
-      if (!files) return;
       grid.innerHTML = "";
+      // FA presets section
+      const presetsTitle = document.createElement("p");
+      presetsTitle.className = "image-explorer-title";
+      presetsTitle.textContent = "Ikony FontAwesome (presety)";
+      grid.appendChild(presetsTitle);
+      const presetsGrid = document.createElement("div");
+      presetsGrid.className = "image-explorer-grid fa-presets-grid";
+      presetsGrid.innerHTML = `{preset_html}`;
+      presetsGrid.querySelectorAll(".fa-preset").forEach(card => {
+        card.addEventListener("click", () => {
+          const url = card.getAttribute("data-url");
+          $("imagePreviewImg").src = url;
+          $("imagePreview").hidden = false;
+          $("image").value = url;
+        });
+      });
+      grid.appendChild(presetsGrid);
+      // Separator
+      const sep = document.createElement("p");
+      sep.className = "image-explorer-title";
+      sep.textContent = "Z repozytorium (assets/images/)";
+      grid.appendChild(sep);
+      const filesGrid = document.createElement("div");
+      filesGrid.className = "image-explorer-grid";
+      grid.appendChild(filesGrid);
       if (!Array.isArray(files) || !files.length) {
-        grid.innerHTML = '<p class="admin-warn">Brak obrazów w assets/images/</p>';
+        const empty = document.createElement("p");
+        empty.className = "admin-warn";
+        empty.textContent = "Brak obrazów w assets/images/";
+        filesGrid.appendChild(empty);
         return;
       }
+      
       files.forEach(f => {
         const card = document.createElement("div");
         card.className = "explorer-card";
@@ -127,7 +175,7 @@ function renderImageExplorer() {
           $("imagePreview").hidden = false;
         };
         card.append(img, name, use);
-        grid.appendChild(card);
+        filesGrid.appendChild(card);
       });
     })
     .catch(err => {
