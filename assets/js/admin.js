@@ -96,6 +96,13 @@ function render() {
 
     const actions = document.createElement("div");
     actions.className = "adm-row";
+    if (p.image) {
+      const thumb = document.createElement("img");
+      thumb.src = p.image;
+      thumb.alt = p.name;
+      thumb.className = "adm-thumb";
+      info.insertBefore(thumb, info.firstChild);
+    }
     const ed = document.createElement("button");
     ed.className = "btn btn-ghost";
     ed.textContent = "Edytuj";
@@ -139,6 +146,7 @@ function edit(i) {
   $("name").value = p.name;
   $("url").value = p.url;
   $("desc").value = p.description || "";
+  $("image").value = p.image || "";
 }
 
 $("edit").addEventListener("submit", e => {
@@ -149,7 +157,9 @@ $("edit").addEventListener("submit", e => {
   if (!name || name.length > 80) { alert("Nazwa: 1–80 znaków."); return; }
   if (!/^https?:\/\//i.test(url)) { alert("URL musi zaczynać się od http:// lub https://"); return; }
   if (description.length > 500) { alert("Opis: maks. 500 znaków."); return; }
+  const image = $("image").value.trim();
   const p = { name, url, description };
+  if (image) p.image = image;
   const i = $("idx").value;
   if (i === "") projects.push(p);
   else projects[+i] = p;

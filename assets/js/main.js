@@ -33,7 +33,9 @@ function renderGrid(projects) {
   projects.forEach(p => {
     const card = document.createElement("article");
     card.className = "project-card";
-    card.innerHTML = '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
+    let imgHtml = "";
+    if (p.image) imgHtml = `<img class="project-card-img" src="${p.image.replace(/"/g, '&quot;')}" alt="${p.name.replace(/"/g, '&quot;')}">`;
+    card.innerHTML = imgHtml + '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
     card.querySelector("h3").textContent = p.name;
     card.querySelector("p").textContent = p.description || "";
     const link = card.querySelector(".project-link");
@@ -60,7 +62,9 @@ function renderFavorites(favorites) {
   favorites.forEach(p => {
     const card = document.createElement("article");
     card.className = "project-card";
-    card.innerHTML = '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
+    let imgHtml = "";
+    if (p.image) imgHtml = `<img class="project-card-img" src="${p.image.replace(/"/g, '&quot;')}" alt="${p.name.replace(/"/g, '&quot;')}">`;
+    card.innerHTML = imgHtml + '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
     card.querySelector("h3").textContent = p.name;
     card.querySelector("p").textContent = p.description || "";
     const link = card.querySelector(".project-link");
