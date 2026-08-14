@@ -17,22 +17,6 @@ async function loadProjects() {
   return { projects: FALLBACK, favorites: [] };
 }
 
-function renderNav(projects) {
-  const slot = document.querySelector("[data-projects-nav]");
-  if (!slot) return;
-  slot.innerHTML = "";
-  projects.forEach(p => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = p.url;
-    a.textContent = p.name;
-    a.target = "_blank";
-    a.rel = "noopener";
-    li.appendChild(a);
-    slot.appendChild(li);
-  });
-}
-
 function renderGrid(projects) {
   const grid = document.querySelector("[data-projects-grid]");
   if (!grid) return;
@@ -110,7 +94,6 @@ function setYear() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const data = await loadProjects();
-  renderNav(data.projects);
   renderGrid(data.projects);
   renderFavorites(data.favorites);
   setupMenu();
