@@ -1,8 +1,20 @@
 const REPO = "gabeczkag/gabeczkag.github.io";
 const OWNER = "gabeczkag";
 const PATH = "projects.json";
+const AUTH_KEY_OR_PASSWORD = "ZmienToKluczDostepu!";
 let projects = [];
 let token = "";
+
+function checkKey() {
+  const v = $("authkey").value;
+  if (v !== AUTH_KEY_OR_PASSWORD) {
+    $("keyerr").textContent = "Nieprawidłowy klucz dostępu.";
+    return;
+  }
+  $("keygate").hidden = true;
+  $("authstep").hidden = false;
+  $("authkey").value = "";
+}
 
 const $ = id => document.getElementById(id);
 
@@ -137,9 +149,12 @@ async function saveGh() {
   }
 }
 
+$("authOk").onclick = checkKey;
+$("authkey").addEventListener("keydown", e => { if (e.key === "Enter") checkKey(); });
 $("open").onclick = open;
 $("saveGh").onclick = saveGh;
 $("saveLocal").onclick = saveLocal;
+$("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 
 (function init() {
   const t = sessionStorage.getItem("gw_token");

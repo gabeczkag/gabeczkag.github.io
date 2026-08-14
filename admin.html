@@ -16,7 +16,17 @@
 </header>
 
 <main class="admin">
-  <section class="admin-auth">
+  <section class="admin-key" id="keygate">
+    <h2>Dostęp</h2>
+    <p>Wpisz klucz dostępu (<code>AUTH_KEY_OR_PASSWORD</code>), by odblokować panel administratora.</p>
+    <div class="admin-form">
+      <input type="password" id="authkey" placeholder="klucz dostępu" autocomplete="off">
+      <button class="btn" id="authOk">Dalej</button>
+    </div>
+    <p class="admin-warn" id="keyerr"></p>
+  </section>
+
+  <section class="admin-auth" id="authstep" hidden>
     <h2>Logowanie</h2>
     <p>Wpisz token GitHub (zakres <code>repo</code>) konta GabeczkaG, by edytować projekty.</p>
     <div class="admin-form">
