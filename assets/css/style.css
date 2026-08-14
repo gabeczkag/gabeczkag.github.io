@@ -466,6 +466,40 @@ main { flex: 1; }
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+.admin-effects {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.admin-effects label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem 1rem;
+  box-shadow: var(--shadow);
+}
+.admin-effects input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+.favorites {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 3.2rem 1.25rem;
+}
+.favorites h2 {
+  font-size: 1.7rem;
+}
+
 @media (max-width: 720px) {
   .nav-toggle { display: flex; }
   .nav-menu {

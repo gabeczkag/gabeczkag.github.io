@@ -5,17 +5,16 @@ async function loadProjects() {
     const r = await fetch("projects.json", { cache: "no-store" });
     if (r.ok) {
       const d = await r.json();
-      if (Array.isArray(d) && d.length) return d;
+      if (Array.isArray(d)) return { projects: d, favorites: [] };
+      if (d && typeof d === 'object') {
+        return {
+          projects: Array.isArray(d.projects) ? d.projects : [],
+          favorites: Array.isArray(d.favorites) ? d.favorites : []
+        };
+      }
     }
   } catch (e) {}
-  try {
-    const ls = localStorage.getItem("gw_projects");
-    if (ls) {
-      const d = JSON.parse(ls);
-      if (Array.isArray(d)) return d;
-    }
-  } catch (e) {}
-  return FALLBACK;
+  return { projects: FALLBACK, favorites: [] };
 }
 
 function renderNav(projects) {
@@ -61,6 +60,33 @@ function renderGrid(projects) {
   if (count) count.textContent = projects.length + (projects.length === 1 ? " projekt" : " projektów");
 }
 
+function renderFavorites(favorites) {
+  const section = document.getElementById("favorites");
+  const grid = document.querySelector("[data-favorites-grid]");
+  const count = document.querySelector("[data-favorites-count]");
+  if (!section || !grid) return;
+
+  grid.innerHTML = "";
+  if (!favorites.length) {
+    section.hidden = true;
+    return;
+  }
+
+  section.hidden = false;
+  favorites.forEach(p => {
+    const card = document.createElement("article");
+    card.className = "project-card";
+    card.innerHTML = '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
+    card.querySelector("h3").textContent = p.name;
+    card.querySelector("p").textContent = p.description || "";
+    const link = card.querySelector(".project-link");
+    link.href = p.url;
+    link.textContent = "Otwórz →";
+    grid.appendChild(card);
+  });
+  if (count) count.textContent = favorites.length + (favorites.length === 1 ? " ulubiony" : " ulubionych");
+}
+
 function setupMenu() {
   const toggle = document.querySelector(".nav-toggle");
   const menu = document.querySelector(".nav-menu");
@@ -83,9 +109,10 @@ function setYear() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const projects = await loadProjects();
-  renderNav(projects);
-  renderGrid(projects);
+  const data = await loadProjects();
+  renderNav(data.projects);
+  renderGrid(data.projects);
+  renderFavorites(data.favorites);
   setupMenu();
   setYear();
 });

@@ -17,6 +17,8 @@ function clearToken() {
 }
 
 let projects = [];
+let favorites = [];
+let effects = { plasma: true, heroBlobs: true, cardHover: true };
 let token = getToken();
 let quickData = null;
 
@@ -55,10 +57,29 @@ async function load() {
     const r = await fetch("/projects.json", { cache: "no-store" });
     if (r.ok) {
       const d = await r.json();
-      if (Array.isArray(d)) projects = d;
+      if (Array.isArray(d)) {
+        projects = d;
+      } else if (d && typeof d === 'object') {
+        projects = Array.isArray(d.projects) ? d.projects : [];
+        effects = { ...effects, ...(d.effects || {}) };
+        favorites = Array.isArray(d.favorites) ? d.favorites : [];
+      }
     }
   } catch (e) {}
+  renderEffects();
   render();
+}
+
+function renderEffects() {
+  const fx = {
+    "fx-plasma": effects.plasma,
+    "fx-hero-blobs": effects.heroBlobs,
+    "fx-card-hover": effects.cardHover
+  };
+  for (const [id, val] of Object.entries(fx)) {
+    const el = document.getElementById(id);
+    if (el) el.checked = !!val;
+  }
 }
 
 function render() {
@@ -88,6 +109,28 @@ function render() {
     li.append(info, actions);
     list.append(li);
   });
+
+  const favList = $("fav-list");
+  if (favList) {
+    favList.innerHTML = "";
+    favorites.forEach((p, i) => {
+      const li = document.createElement("li");
+      const info = document.createElement("div");
+      info.innerHTML = "<strong></strong><span class=\"adm-url\"></span><p></p>";
+      info.querySelector("strong").textContent = p.name;
+      info.querySelector(".adm-url").textContent = p.url;
+      info.querySelector("p").textContent = p.description || "";
+      const actions = document.createElement("div");
+      actions.className = "adm-row";
+      const del = document.createElement("button");
+      del.className = "btn btn-ghost";
+      del.textContent = "Usuń";
+      del.onclick = () => { favorites.splice(i, 1); render(); };
+      actions.append(del);
+      li.append(info, actions);
+      favList.append(li);
+    });
+  }
 }
 
 function edit(i) {
@@ -116,6 +159,14 @@ $("edit").addEventListener("submit", e => {
 });
 
 $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
+
+["fx-plasma", "fx-hero-blobs", "fx-card-hover"].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener("change", () => {
+    effects[id.replace("fx-", "")] = el.checked;
+  });
+});
 
 $("login").onclick = () => {
   location.href = WORKER_URL + "/login";
@@ -177,6 +228,25 @@ $("qp-cancel").onclick = () => {
   $("quickmsg").textContent = "";
 };
 
+$("addFav").onclick = async () => {
+  const input = $("favUrl").value.trim();
+  const m = input.match(/github\.com\/([^\/\s?#]+)\/([^\/\s?#]+)/);
+  if (!m) { alert("Podaj poprawny link do repozytorium GitHub."); return; }
+  const owner = m[1], repoName = m[2].replace(/\.git$/, "");
+  try {
+    const headers = { Accept: "application/vnd.github+json" };
+    if (token) headers.Authorization = "Bearer " + token;
+    const r = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
+    if (!r.ok) { alert("Nie znaleziono repo (" + r.status + ")"); return; }
+    const repo = await r.json();
+    favorites.push({ name: repo.name, url: repo.html_url, description: repo.description || "" });
+    render();
+    $("favUrl").value = "";
+  } catch (e) {
+    alert("Błąd sieci: " + e.message);
+  }
+};
+
 async function save() {
   if (!token) { $("status").textContent = "Nie jesteś zalogowany."; return; }
   $("status").textContent = "Zapisywanie...";
@@ -185,7 +255,8 @@ async function save() {
       headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
     });
     const data = get.ok ? await get.json() : { sha: undefined };
-    const content = b64(JSON.stringify(projects, null, 2));
+    const payload = { projects, effects, favorites };
+    const content = b64(JSON.stringify(payload, null, 2));
     const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
       method: "PUT",
       headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
