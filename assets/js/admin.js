@@ -22,8 +22,8 @@ async function exchange(code, state) {
   try {
     const r = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ client_id: CLIENT_ID, code })
+      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+      body: "client_id=" + encodeURIComponent(CLIENT_ID) + "&code=" + encodeURIComponent(code)
     });
     const j = await r.json();
     if (j.access_token) {
