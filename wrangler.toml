@@ -1,7 +1,8 @@
 name = "gabeczkag-github-io"
 main = "src/worker.js"
+type = "module"
 compatibility_date = "2024-09-23"
 
 # W Cloudflare -> Workers -> gabeczkag-github-io -> Settings -> Variables ustaw sekret:
 #   GITHUB_CLIENT_SECRET   (z OAuth App na GitHubie)
-# Worker w formacie service-worker (addEventListener) - wklej zawartosc src/worker.js do edytora.
+# Wdeployuj przez: wrangler deploy  (gwarantuje format ESM, bez ambiguitetu dashboardu)
