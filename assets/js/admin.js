@@ -67,6 +67,7 @@ async function load() {
     }
   } catch (e) {}
   renderEffects();
+  renderImageExplorer();
   render();
 }
 
@@ -80,6 +81,48 @@ function renderEffects() {
     const el = document.getElementById(id);
     if (el) el.checked = !!val;
   }
+}
+
+function renderImageExplorer() {
+  const grid = $("imageExplorerGrid");
+  if (!grid) return;
+  grid.innerHTML = '<p class="admin-warn">Ładowanie...</p>';
+  fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/assets/images`, {
+    headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
+  })
+  .then(r => r.ok ? r.json() : [])
+  .then(files => {
+    grid.innerHTML = "";
+    if (!Array.isArray(files) || !files.length) {
+      grid.innerHTML = '<p class="admin-warn">Brak obrazów w assets/images/</p>';
+      return;
+    }
+    files.forEach(f => {
+      const card = document.createElement("div");
+      card.className = "explorer-card";
+      const img = document.createElement("img");
+      img.src = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/assets/images/${f.name}`;
+      img.alt = f.name;
+      img.loading = "lazy";
+      const name = document.createElement("span");
+      name.className = "explorer-name";
+      name.textContent = f.name;
+      const use = document.createElement("button");
+      use.type = "button";
+      use.className = "btn btn-ghost";
+      use.textContent = "Użyj";
+      use.onclick = () => {
+        $("image").value = `assets/images/${f.name}`;
+        $("imagePreviewImg").src = img.src;
+        $("imagePreview").hidden = false;
+      };
+      card.append(img, name, use);
+      grid.appendChild(card);
+    });
+  })
+  .catch(() => {
+    grid.innerHTML = '<p class="admin-warn">Nie udało się załadować obrazów.</p>';
+  });
 }
 
 function render() {
@@ -286,6 +329,24 @@ async function save() {
   }
 }
 $("save").onclick = save;
+
+$("browseImage").onclick = () => $("imageFile").click();
+$("imageFile").onchange = () => {
+  const file = $("imageFile").files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    $("imagePreviewImg").src = e.target.result;
+    $("imagePreview").hidden = false;
+    $("image").value = "";
+  };
+  reader.readAsDataURL(file);
+};
+$("clearImage").onclick = () => {
+  $("image").value = "";
+  $("imagePreview").hidden = true;
+  $("imageFile").value = "";
+};
 
 (async () => {
   if (location.hash.startsWith("#token=")) {

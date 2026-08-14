@@ -43,7 +43,21 @@
         <label>Nazwa<input id="name" required placeholder="Np. Moja Aplikacja"></label>
         <label>URL<input id="url" type="url" required placeholder="https://github.com/gabeczkag/..."></label>
         <label style="grid-column:1 / -1">Opis<textarea id="desc" rows="3" placeholder="Krótki opis projektu"></textarea></label>
-        <label>Obraz (URL)<input id="image" placeholder="https://.../obraz.jpg" autocomplete="off"></label>
+        <label>Obraz (URL)
+          <div class="image-picker">
+            <input id="image" placeholder="https://.../obraz.jpg" autocomplete="off">
+            <button type="button" class="btn btn-ghost" id="browseImage">Przeglądaj</button>
+            <input type="file" id="imageFile" accept="image/*" hidden>
+          </div>
+        </label>
+        <div id="imagePreview" class="image-preview" hidden>
+          <img id="imagePreviewImg" alt="Podgląd">
+          <button type="button" class="btn btn-ghost" id="clearImage">Usuń</button>
+        </div>
+        <div class="image-explorer" id="imageExplorer">
+          <p class="image-explorer-title">Dostępne obrazy (assets/images/)</p>
+          <div class="image-explorer-grid" id="imageExplorerGrid"></div>
+        </div>
         <div class="admin-actions">
           <button type="submit" class="btn">Zapisz</button>
           <button type="button" class="btn btn-ghost" id="cancel">Anuluj</button>
