@@ -42,7 +42,7 @@ function renderGrid(projects) {
   if (!projects.length) {
     const empty = document.createElement("div");
     empty.className = "projects-empty";
-    empty.innerHTML = '<p>Brak projektów do wyświetlenia.</p><p>Dodaj je w <a href="admin.html">panelu administratora</a>.</p>';
+    empty.innerHTML = '<p>Brak projektów do wyświetlenia.</p><p>Dodaj je w <a href="/admin/">panelu administratora</a>.</p>';
     grid.appendChild(empty);
     if (count) count.textContent = "0 projektów";
     return;
