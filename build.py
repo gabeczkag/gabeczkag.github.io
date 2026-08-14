@@ -1,5 +1,4 @@
-import shutil
-import pathlib
+import pathlib, shutil
 
 ROOT = pathlib.Path(__file__).parent
 BUILD = ROOT / "build"

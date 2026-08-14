@@ -1,25 +1,66 @@
-const WORKER = "https://gabeczkag-github-io.gabeczkaweb-authorization.workers.dev";
+const CLIENT_ID = "Iv23limKstWLUxYHjNeN";
+const OWNER = "gabeczkag";
+const REPO = "gabeczkag.github.io";
+const PATH = "projects.json";
+
 const $ = id => document.getElementById(id);
 
 let projects = [];
-let session = sessionStorage.getItem("gw_session") || "";
+let token = sessionStorage.getItem("gw_token") || "";
 
-function parseHash() {
-  if (location.hash.startsWith("#token=")) {
-    session = decodeURIComponent(location.hash.slice(7));
-    sessionStorage.setItem("gw_session", session);
-    history.replaceState(null, "", location.pathname + location.search);
+function b64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+async function exchange(code, state) {
+  const saved = sessionStorage.getItem("gw_state");
+  if (state && saved && state !== saved) {
+    $("authmsg").textContent = "Błąd: niezgodny parametr state.";
+    return;
+  }
+  sessionStorage.removeItem("gw_state");
+  try {
+    const r = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ client_id: CLIENT_ID, code })
+    });
+    const j = await r.json();
+    if (j.access_token) {
+      token = j.access_token;
+      sessionStorage.setItem("gw_token", token);
+      await enter();
+    } else {
+      $("authmsg").textContent = "Błąd logowania: " + (j.error_description || j.error || "brak tokena");
+    }
+  } catch (e) {
+    $("authmsg").textContent = "Błąd sieci: " + e.message;
   }
 }
 
 async function checkAuth() {
-  if (!session) return false;
+  if (!token) return false;
   try {
-    const r = await fetch(WORKER + "/me", { headers: { Authorization: "Bearer " + session } });
-    const j = await r.json();
-    return !!j.auth;
-  } catch (e) {
+    const r = await fetch("https://api.github.com/user", {
+      headers: { Authorization: "Bearer " + token, Accept: "application/json" }
+    });
+    if (!r.ok) return false;
+    const me = await r.json();
+    return me.login?.toLowerCase() === OWNER;
+  } catch {
     return false;
+  }
+}
+
+async function enter() {
+  if (await checkAuth()) {
+    $("auth").hidden = true;
+    $("panel").hidden = false;
+    await load();
+  } else {
+    token = "";
+    sessionStorage.removeItem("gw_token");
+    $("authmsg").textContent = "Brak dostępu. Musisz być właścicielem konta " + OWNER + ".";
   }
 }
 
@@ -90,26 +131,39 @@ $("edit").addEventListener("submit", e => {
 
 $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 
-$("login").onclick = () => { window.location = WORKER + "/login"; };
+$("login").onclick = () => {
+  const state = crypto.randomUUID();
+  sessionStorage.setItem("gw_state", state);
+  const redirect = location.origin + location.pathname;
+  const url = "https://github.com/login/oauth/authorize?client_id=" + CLIENT_ID +
+    "&redirect_uri=" + encodeURIComponent(redirect) +
+    "&scope=" + encodeURIComponent("repo read:user") +
+    "&state=" + state;
+  location.href = url;
+};
 
 $("logout").onclick = () => {
-  session = "";
-  sessionStorage.removeItem("gw_session");
+  token = "";
+  sessionStorage.removeItem("gw_token");
   location.reload();
 };
 
 async function save() {
-  if (!session) { $("status").textContent = "Nie jesteś zalogowany."; return; }
+  if (!token) { $("status").textContent = "Nie jesteś zalogowany."; return; }
   $("status").textContent = "Zapisywanie...";
   try {
-    const r = await fetch(WORKER + "/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + session },
-      body: JSON.stringify(projects)
+    const get = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+      headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
     });
-    const j = await r.json().catch(() => ({}));
-    if (r.ok && j.ok) $("status").textContent = "Zapisano. Strona zaktualizuje się za chwilę.";
-    else $("status").textContent = "Błąd: " + (j.error || r.status);
+    const data = get.ok ? await get.json() : { sha: undefined };
+    const content = b64(JSON.stringify(projects, null, 2));
+    const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
+      body: JSON.stringify({ message: "Aktualizacja projektow (panel)", content, sha: data.sha })
+    });
+    if (put.ok) $("status").textContent = "Zapisano. Strona zaktualizuje się za chwilę.";
+    else { const e = await put.json().catch(() => ({})); $("status").textContent = "Błąd: " + (e.message || put.status); }
   } catch (e) {
     $("status").textContent = "Błąd sieci: " + e.message;
   }
@@ -117,12 +171,13 @@ async function save() {
 $("save").onclick = save;
 
 (async () => {
-  parseHash();
-  if (await checkAuth()) {
-    $("auth").hidden = true;
-    $("panel").hidden = false;
-    await load();
+  const u = new URL(location.href);
+  const code = u.searchParams.get("code");
+  const state = u.searchParams.get("state");
+  if (code) {
+    history.replaceState(null, "", location.pathname);
+    await exchange(code, state);
   } else {
-    sessionStorage.removeItem("gw_session");
+    await enter();
   }
 })();
