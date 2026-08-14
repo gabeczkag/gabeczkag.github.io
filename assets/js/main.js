@@ -1,7 +1,7 @@
 const projects = [
-  { name: "Projekt Alpha", url: "https://github.com/GabeczkaGWeb", description: "Krótki opis projektu Alpha. Zmień nazwę, URL i opis." },
-  { name: "Projekt Beta", url: "https://github.com/GabeczkaGWeb", description: "Krótki opis projektu Beta. Tu wpisz, czym się zajmuje." },
-  { name: "Projekt Gamma", url: "https://github.com/GabeczkaGWeb", description: "Krótki opis projektu Gamma. Dodaj kolejne obiekty do tablicy." }
+  { name: "Projekt Alpha", url: "https://github.com/Gamer542-arch", description: "Krótki opis projektu Alpha. Zmień nazwę, URL i opis." },
+  { name: "Projekt Beta", url: "https://github.com/Gamer542-arch", description: "Krótki opis projektu Beta. Tu wpisz, czym się zajmuje." },
+  { name: "Projekt Gamma", url: "https://github.com/Gamer542-arch", description: "Krótki opis projektu Gamma. Dodaj kolejne obiekty do tablicy." }
 ];
 
 function renderNav() {
