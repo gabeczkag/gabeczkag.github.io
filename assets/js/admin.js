@@ -1,6 +1,7 @@
 const OWNER = "gabeczkag";
 const REPO = "gabeczkag.github.io";
 const PATH = "projects.json";
+const WORKER_URL = "https://gabeczkag-github-io.gabeczkaweb-authorization.workers.dev";
 
 const $ = id => document.getElementById(id);
 
@@ -104,7 +105,11 @@ $("edit").addEventListener("submit", e => {
 
 $("cancel").onclick = () => { $("idx").value = ""; $("edit").reset(); };
 
-$("login").onclick = async () => {
+$("login").onclick = () => {
+  location.href = WORKER_URL + "/login";
+};
+
+$("loginToken").onclick = async () => {
   token = $("token").value.trim();
   if (!token) { $("authmsg").textContent = "Wpisz token."; return; }
   sessionStorage.setItem("gw_token", token);
@@ -140,5 +145,12 @@ async function save() {
 $("save").onclick = save;
 
 (async () => {
-  await enter();
+  if (location.hash.startsWith("#token=")) {
+    token = decodeURIComponent(location.hash.slice(7));
+    sessionStorage.setItem("gw_token", token);
+    history.replaceState(null, "", location.pathname);
+    await enter();
+  } else {
+    await enter();
+  }
 })();

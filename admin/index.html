@@ -18,10 +18,13 @@
 <main class="admin">
   <section class="admin-auth" id="auth">
     <h2>Logowanie</h2>
-    <p>Wklej GitHub Personal Access Token (scope <code>repo</code>) dla konta <code>gabeczkag</code>, by edytować projekty.</p>
+    <p>Zaloguj się przez GitHub (OAuth) lub wklej token (PAT, scope <code>repo</code>) dla konta <code>gabeczkag</code>.</p>
     <div class="admin-form">
-      <input type="password" id="token" placeholder="ghp_..." autocomplete="off">
-      <button class="btn" id="login">Zaloguj</button>
+      <button class="btn" id="login">Zaloguj przez GitHub</button>
+    </div>
+    <div class="admin-form" style="margin-top:0.75rem">
+      <input type="password" id="token" placeholder="lub wklej token ghp_..." autocomplete="off">
+      <button class="btn btn-ghost" id="loginToken">Zaloguj (token)</button>
     </div>
     <p class="admin-warn" id="authmsg"></p>
   </section>
