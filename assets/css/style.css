@@ -64,11 +64,23 @@ a:hover { color: var(--accent-2); }
   color: var(--text);
   letter-spacing: 0.3px;
 }
+.brand-name {
+  transition: color 0.25s ease;
+}
 .brand-accent {
   background: var(--grad);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: color 0.25s ease, -webkit-text-fill-color 0.25s ease, background 0.25s ease;
+}
+.brand:hover .brand-name {
+  color: var(--accent);
+}
+.brand:hover .brand-accent {
+  background: none;
+  -webkit-text-fill-color: #111111;
+  color: #111111;
 }
 .brand-tag {
   font-size: 0.66rem;
