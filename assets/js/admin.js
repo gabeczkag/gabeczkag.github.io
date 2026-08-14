@@ -413,7 +413,11 @@ $("clearImage").onclick = () => {
 $("useSvg").onclick = () => {
   const code = $("svgCode").value.trim();
   if (!code) { alert("Wklej kod SVG."); return; }
-  const b64 = btoa(unescape(encodeURIComponent(code)));
+  let svg = code;
+  if (!/fill\s*=/i.test(svg)) {
+    svg = svg.replace(/<svg/i, '<svg fill="#000"');
+  }
+  const b64 = btoa(unescape(encodeURIComponent(svg)));
   const url = "data:image/svg+xml;base64," + b64;
   $("imagePreviewImg").src = url;
   $("imagePreview").hidden = false;
