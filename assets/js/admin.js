@@ -1,7 +1,7 @@
 const REPO = "gabeczkag/gabeczkag.github.io";
 const OWNER = "gabeczkag";
 const PATH = "projects.json";
-const AUTH_KEY_OR_PASSWORD = "ZmienToKluczDostepu!";
+const AUTH_KEY_OR_PASSWORD = "__AUTH_KEY_PLACEHOLDER__";
 let projects = [];
 let token = "";
 
