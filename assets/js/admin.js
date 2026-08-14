@@ -410,6 +410,17 @@ $("clearImage").onclick = () => {
   $("imageFile").value = "";
 };
 
+$("useSvg").onclick = () => {
+  const code = $("svgCode").value.trim();
+  if (!code) { alert("Wklej kod SVG."); return; }
+  const b64 = btoa(unescape(encodeURIComponent(code)));
+  const url = "data:image/svg+xml;base64," + b64;
+  $("imagePreviewImg").src = url;
+  $("imagePreview").hidden = false;
+  $("image").value = url;
+  $("imageFile").value = "";
+};
+
 (async () => {
   if (location.hash.startsWith("#token=")) {
     token = decodeURIComponent(location.hash.slice(7));
