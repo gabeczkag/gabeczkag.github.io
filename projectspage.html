@@ -83,21 +83,35 @@
           img.hidden = true;
         }
 
-        const m = project.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-        if (m) {
-          const [, owner, repo] = m;
-          const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
-            headers: { Accept: "application/vnd.github.html+json" }
-          });
-          const el = document.getElementById("readme");
-          if (rr.ok) {
-            const data = await rr.json();
-            el.innerHTML = data.html || "<p>Brak README dla tego repozytorium.</p>";
-          } else {
-            el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
-          }
+        const el = document.getElementById("readme");
+        if (project.readmeHtml) {
+          el.innerHTML = project.readmeHtml;
         } else {
-          document.getElementById("readme").innerHTML = "<p>Nie można pobrać README (nieprawidłowy URL repo).</p>";
+          const m = project.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+          if (m) {
+            const [, owner, repo] = m;
+            const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
+              headers: { Accept: "application/vnd.github.html+json" }
+            });
+            if (rr.ok) {
+              const ct = rr.headers.get("content-type") || "";
+              if (ct.includes("application/json")) {
+                try {
+                  const data = await rr.json();
+                  el.innerHTML = data.html || "<p>Brak README dla tego repozytorium.</p>";
+                } catch (e) {
+                  el.innerHTML = "<p>Nie udało się sparsować README.</p>";
+                }
+              } else {
+                const text = await rr.text();
+                el.innerHTML = `<pre>${text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c)}</pre>`;
+              }
+            } else {
+              el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
+            }
+          } else {
+            el.innerHTML = "<p>Nie można pobrać README (nieprawidłowy URL repo).</p>";
+          }
         }
 
         document.getElementById("loading").hidden = true;

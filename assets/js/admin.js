@@ -26,6 +26,78 @@ function b64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+async function putGhContent(path, b64content, message) {
+  const filePath = path;
+  const get = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}`, {
+    headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
+  });
+  const data = get.ok ? await get.json() : { sha: undefined };
+  const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}`, {
+    method: "PUT",
+    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
+    body: JSON.stringify({ message, content: b64content, sha: data.sha })
+  });
+  if (!put.ok) {
+    const err = await put.json().catch(() => ({}));
+    throw new Error(err.message || ("HTTP " + put.status));
+  }
+  return await put.json();
+}
+
+async function syncReadmeImages(i) {
+  const p = projects[i];
+  if (!p || !p.url) throw new Error("Brak URL projektu.");
+  const m = p.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+  if (!m) throw new Error("Nieprawidłowy URL GitHub.");
+  const [, owner, repo] = m;
+
+  const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
+    headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github.html+json" }
+  });
+  if (!rr.ok) throw new Error("Nie udało się pobrać README (" + rr.status + ").");
+  const ct = rr.headers.get("content-type") || "";
+  let readmeHtml = "";
+  if (ct.includes("application/json")) {
+    const data = await rr.json();
+    readmeHtml = data.html || "";
+  } else {
+    const text = await rr.text();
+    readmeHtml = `<pre>${text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c)}</pre>`;
+  }
+  if (!readmeHtml) throw new Error("Pusty README.");
+
+  const imgs = Array.from(readmeHtml.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/g)).map(x => x[1]).filter(Boolean);
+  const dirPath = `assets/readmeimages/${encodeURIComponent(p.name)}`;
+  const urlToLocal = {};
+
+  for (const src of imgs) {
+    try {
+      const imgR = await fetch(src, { headers: { Accept: "image/*" } });
+      if (!imgR.ok) continue;
+      const blob = await imgR.blob();
+      const fileName = src.split("/").pop().split("?")[0] || `img-${Math.random().toString(36).slice(2)}.png`;
+      const path = `${dirPath}/${fileName}`;
+      const b64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.readAsDataURL(blob);
+      });
+      const put = await putGhContent(path, b64, `Add README image ${fileName}`);
+      if (put && put.content && put.content.sha) {
+        urlToLocal[src] = `/assets/readmeimages/${encodeURIComponent(p.name)}/${fileName}`;
+      }
+    } catch (e) {
+      console.warn("readme image upload failed", src, e);
+    }
+  }
+
+  for (const [from, to] of Object.entries(urlToLocal)) {
+    readmeHtml = readmeHtml.split(from).join(to);
+  }
+  p.readmeHtml = readmeHtml;
+  render();
+}
+
 async function checkAuth() {
   if (!token) return false;
   try {
@@ -224,7 +296,19 @@ function render() {
     del.className = "btn btn-ghost";
     del.textContent = "Usuń";
     del.onclick = () => { projects.splice(i, 1); render(); };
-    actions.append(ed, del);
+    const sync = document.createElement("button");
+    sync.className = "btn btn-ghost";
+    sync.textContent = "Sync README";
+    sync.onclick = async () => {
+      try {
+        $("status").textContent = "Pobieranie README i obrazów…";
+        await syncReadmeImages(i);
+        $("status").textContent = "Zapisano ✓";
+      } catch (e) {
+        $("status").textContent = "Błąd: " + e.message;
+      }
+    };
+    actions.append(ed, del, sync);
 
     li.append(info, actions);
     list.append(li);

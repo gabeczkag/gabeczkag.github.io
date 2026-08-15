@@ -824,30 +824,6 @@ main { flex: 1; }
   font-weight: 700;
   color: var(--text);
 }
-details.env-details {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.7rem 1rem;
-  margin: 1rem 0;
-  background: var(--bg-soft);
-}
-details.env-details summary {
-  font-weight: 700;
-  color: var(--text);
-  cursor: pointer;
-  user-select: none;
-  margin-bottom: 0.5rem;
-}
-details.env-details[open] summary {
-  margin-bottom: 0.7rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-}
-details.env-details pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
 .project-loading, .project-error {
   max-width: var(--maxw);
   margin: 0 auto;
@@ -1027,8 +1003,6 @@ details.env-details pre {
 }
 
 @media (max-width: 720px) {
-
-@media (max-width: 720px) {
   .project-page-header {
     flex-direction: column;
     align-items: center;
@@ -1038,8 +1012,6 @@ details.env-details pre {
     width: 100px;
     height: 100px;
   }
-}
-
 
   .nav-toggle { display: flex; }
   .nav-menu {
