@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projekt</title>
   <link rel="stylesheet" href="/assets/css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
 </head>
 <body>
   <div class="plasma-bg" aria-hidden="true">
@@ -85,6 +84,13 @@
         }
 
         const el = document.getElementById("readme");
+        const envToDetails = (html) => {
+          if (!html) return "";
+          return html.replace(
+            /<environment_details[^>]*>([\s\S]*?)<\/environment_details>/gi,
+            '<details class="env-details"><summary>environment</summary><div class="env-details-body">$1</div></details>'
+          );
+        };
         const renderReadme = async (project) => {
           const m = project.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
           if (!m) {
@@ -95,23 +101,18 @@
 
           try {
             const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
-              headers: { Accept: "application/vnd.github.raw+json" }
+              headers: { Accept: "application/vnd.github.html+json" }
             });
             if (!rr.ok) {
               el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
               return;
             }
-            const text = await rr.text();
-
-            if (typeof marked !== "undefined") {
-              const html = marked.parse(text, {
-                gfm: true,
-                breaks: true,
-                headerIds: false,
-                mangle: false
-              });
-              el.innerHTML = html;
+            const ct = rr.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+              const data = await rr.json();
+              el.innerHTML = envToDetails(data.html || data);
             } else {
+              const text = await rr.text();
               el.innerHTML = "<pre>" + text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c) + "</pre>";
             }
           } catch (e) {
@@ -120,7 +121,7 @@
         };
 
         if (project.readmeHtml) {
-          el.innerHTML = marked.parse(project.readmeHtml, { gfm: true, breaks: true, headerIds: false, mangle: false });
+          el.innerHTML = envToDetails(project.readmeHtml);
         } else {
           await renderReadme(project);
         }
