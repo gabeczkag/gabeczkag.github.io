@@ -107,14 +107,17 @@
               el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
               return;
             }
-            const ct = rr.headers.get("content-type") || "";
-            if (ct.includes("application/json")) {
-              const data = await rr.json();
-              el.innerHTML = envToDetails(data.html || data);
-            } else {
-              const text = await rr.text();
-              el.innerHTML = "<pre>" + text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c) + "</pre>";
+            const rawText = await rr.text();
+            let html = rawText;
+            try {
+              const data = JSON.parse(rawText);
+              html = data.html || rawText;
+            } catch (_) {
+              if (!rawText.trim().toLowerCase().startsWith("<")) {
+                html = "<pre>" + rawText.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c) + "</pre>";
+              }
             }
+            el.innerHTML = envToDetails(html);
           } catch (e) {
             el.innerHTML = "<p>Nie udało się pobrać README.</p>";
           }
