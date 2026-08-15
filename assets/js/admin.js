@@ -27,12 +27,12 @@ function b64(str) {
 }
 
 async function putGhContent(path, b64content, message) {
-  const filePath = path;
-  const get = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}`, {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  const get = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodedPath}`, {
     headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" }
   });
   const data = get.ok ? await get.json() : { sha: undefined };
-  const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}`, {
+  const put = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${encodedPath}`, {
     method: "PUT",
     headers: { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/vnd.github+json" },
     body: JSON.stringify({ message, content: b64content, sha: data.sha })
@@ -67,7 +67,8 @@ async function syncReadmeImages(i) {
   if (!readmeHtml) throw new Error("Pusty README.");
 
   const imgs = Array.from(readmeHtml.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/g)).map(x => x[1]).filter(Boolean);
-  const dirPath = `assets/readmeimages/${encodeURIComponent(p.name)}`;
+  const safeName = p.name.replace(/[^a-zA-Z0-9-_ ]/g, "").replace(/\s+/g, "-").slice(0, 64);
+  const dirPath = `assets/readmeimages/${safeName}`;
   const urlToLocal = {};
 
   for (const src of imgs) {
@@ -75,26 +76,28 @@ async function syncReadmeImages(i) {
       const imgR = await fetch(src, { headers: { Accept: "image/*" } });
       if (!imgR.ok) continue;
       const blob = await imgR.blob();
-      const fileName = src.split("/").pop().split("?")[0] || `img-${Math.random().toString(36).slice(2)}.png`;
-      const path = `${dirPath}/${fileName}`;
+      const rawName = src.split("/").pop().split("?")[0] || `img-${Math.random().toString(36).slice(2)}.png`;
+      const fileName = rawName.replace(/[^a-zA-Z0-9-_.]/g, "_");
+      const ghPath = `${dirPath}/${fileName}`;
       const b64 = await new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result.split(",")[1]);
         reader.readAsDataURL(blob);
       });
-      const put = await putGhContent(path, b64, `Add README image ${fileName}`);
+      const put = await putGhContent(ghPath, b64, `Add README image ${fileName}`);
       if (put && put.content && put.content.sha) {
-        urlToLocal[src] = `/assets/readmeimages/${encodeURIComponent(p.name)}/${fileName}`;
+        urlToLocal[src] = `/assets/readmeimages/${safeName}/${fileName}`;
       }
     } catch (e) {
       console.warn("readme image upload failed", src, e);
     }
   }
 
+  let replaced = readmeHtml;
   for (const [from, to] of Object.entries(urlToLocal)) {
-    readmeHtml = readmeHtml.split(from).join(to);
+    replaced = replaced.split(from).join(to);
   }
-  p.readmeHtml = readmeHtml;
+  p.readmeHtml = replaced;
   render();
 }
 
