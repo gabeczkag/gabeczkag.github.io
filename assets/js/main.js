@@ -50,7 +50,7 @@ function renderGrid(projects) {
       card.insertBefore(epWrap, card.querySelector(".project-link"));
     }
     const link = card.querySelector(".project-link");
-    link.href = p.url;
+    link.href = `/projectspage.html?name=${encodeURIComponent(p.name)}`;
     link.textContent = "Otwórz →";
     grid.appendChild(card);
   });
@@ -90,7 +90,7 @@ function renderFavorites(favorites) {
       card.insertBefore(epWrap, card.querySelector(".project-link"));
     }
     const link = card.querySelector(".project-link");
-    link.href = p.url;
+    link.href = `/projectspage.html?name=${encodeURIComponent(p.name)}`;
     link.textContent = "Otwórz →";
     grid.appendChild(card);
   });

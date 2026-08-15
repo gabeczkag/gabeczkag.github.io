@@ -693,7 +693,150 @@ main { flex: 1; }
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+.project-page {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 3.2rem 1.25rem;
+}
+.project-page-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 2.2rem;
+}
+.project-page-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  flex-shrink: 0;
+}
+.project-page-meta {
+  flex: 1;
+  min-width: 0;
+}
+.project-page-meta h1 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  margin-bottom: 0.6rem;
+}
+.project-page-desc {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+.project-readme h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+.project-readme-pre-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  overflow-x: auto;
+}
+.project-readme-pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.project-loading, .project-error {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 3.2rem 1.25rem;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+.project-error {
+  color: #c0392b;
+}
+
+.project-page {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 3.2rem 1.25rem;
+}
+.project-page-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 2.2rem;
+}
+.project-page-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  flex-shrink: 0;
+}
+.project-page-meta {
+  flex: 1;
+  min-width: 0;
+}
+.project-page-meta h1 {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  margin-bottom: 0.6rem;
+}
+.project-page-desc {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+.project-readme h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+.project-readme-pre-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  overflow-x: auto;
+}
+.project-readme-pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.project-loading, .project-error {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 3.2rem 1.25rem;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+.project-error {
+  color: #c0392b;
+}
+
 @media (max-width: 720px) {
+
+@media (max-width: 720px) {
+  .project-page-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .project-page-img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+
   .nav-toggle { display: flex; }
   .nav-menu {
     position: absolute;
