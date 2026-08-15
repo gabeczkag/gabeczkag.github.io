@@ -38,6 +38,17 @@ function renderGrid(projects) {
     card.innerHTML = imgHtml + '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
     card.querySelector("h3").textContent = p.name;
     card.querySelector("p").textContent = p.description || "";
+    if (Array.isArray(p.endpoints) && p.endpoints.length) {
+      const epWrap = document.createElement("div");
+      epWrap.className = "project-endpoints";
+      p.endpoints.forEach(e => {
+        const chip = document.createElement("code");
+        chip.className = "endpoint-chip";
+        chip.textContent = e;
+        epWrap.appendChild(chip);
+      });
+      card.insertBefore(epWrap, card.querySelector(".project-link"));
+    }
     const link = card.querySelector(".project-link");
     link.href = p.url;
     link.textContent = "Otwórz →";
@@ -67,6 +78,17 @@ function renderFavorites(favorites) {
     card.innerHTML = imgHtml + '<h3></h3><p></p><a class="project-link" target="_blank" rel="noopener"></a>';
     card.querySelector("h3").textContent = p.name;
     card.querySelector("p").textContent = p.description || "";
+    if (Array.isArray(p.endpoints) && p.endpoints.length) {
+      const epWrap = document.createElement("div");
+      epWrap.className = "project-endpoints";
+      p.endpoints.forEach(e => {
+        const chip = document.createElement("code");
+        chip.className = "endpoint-chip";
+        chip.textContent = e;
+        epWrap.appendChild(chip);
+      });
+      card.insertBefore(epWrap, card.querySelector(".project-link"));
+    }
     const link = card.querySelector(".project-link");
     link.href = p.url;
     link.textContent = "Otwórz →";

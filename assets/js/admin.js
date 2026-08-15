@@ -195,6 +195,17 @@ function render() {
     info.querySelector("strong").textContent = p.name;
     info.querySelector(".adm-url").textContent = p.url;
     info.querySelector("p").textContent = p.description || "";
+    if (Array.isArray(p.endpoints) && p.endpoints.length) {
+      const ep = document.createElement("div");
+      ep.className = "adm-endpoints";
+      p.endpoints.forEach(e => {
+        const chip = document.createElement("code");
+        chip.className = "adm-endpoint-chip";
+        chip.textContent = e;
+        ep.appendChild(chip);
+      });
+      info.appendChild(ep);
+    }
 
     const actions = document.createElement("div");
     actions.className = "adm-row";
@@ -249,6 +260,7 @@ function edit(i) {
   $("url").value = p.url;
   $("desc").value = p.description || "";
   $("image").value = p.image || "";
+  $("endpoints").value = Array.isArray(p.endpoints) ? p.endpoints.join("\n") : "";
 }
 
 $("edit").addEventListener("submit", e => {
@@ -260,7 +272,9 @@ $("edit").addEventListener("submit", e => {
   if (!/^https?:\/\//i.test(url)) { alert("URL musi zaczynać się od http:// lub https://"); return; }
   if (description.length > 500) { alert("Opis: maks. 500 znaków."); return; }
   const image = $("image").value.trim();
-  const p = { name, url, description };
+  const endpointsRaw = $("endpoints").value.trim();
+  const endpoints = endpointsRaw ? endpointsRaw.split(/\n+/).map(x => x.trim()).filter(Boolean) : [];
+  const p = { name, url, description, endpoints };
   if (image) p.image = image;
   const i = $("idx").value;
   if (i === "") projects.push(p);

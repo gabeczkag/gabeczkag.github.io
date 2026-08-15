@@ -658,6 +658,41 @@ main { flex: 1; }
   line-height: 1.5;
   min-height: 5rem;
 }
+
+.project-endpoints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.6rem;
+}
+.endpoint-chip {
+  display: inline-block;
+  background: var(--bg-soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-decoration: none;
+}
+.adm-endpoints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.adm-endpoint-chip {
+  display: inline-block;
+  background: var(--bg-soft);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
 @media (max-width: 720px) {
   .nav-toggle { display: flex; }
   .nav-menu {
