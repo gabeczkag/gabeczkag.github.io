@@ -739,12 +739,14 @@ main { flex: 1; }
   font-size: 1.5rem;
   margin-bottom: 1rem;
   text-align: center;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
 }
 .project-readme {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.4rem;
+  padding: 1.8rem;
   overflow-x: auto;
   line-height: 1.7;
   font-size: 0.95rem;
@@ -757,13 +759,17 @@ main { flex: 1; }
 }
 .project-readme a {
   color: var(--accent);
+  text-decoration: none;
+}
+.project-readme a:hover {
   text-decoration: underline;
 }
 .project-readme code {
   background: var(--bg-soft);
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 6px;
-  font-size: 0.9em;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 .project-readme pre {
   background: var(--bg-soft);
@@ -773,26 +779,71 @@ main { flex: 1; }
   overflow-x: auto;
   line-height: 1.6;
 }
+.project-readme pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.85em;
+}
 .project-readme blockquote {
   border-left: 4px solid var(--accent);
   padding-left: 1rem;
   margin: 1rem 0;
   color: var(--text-dim);
 }
-.env-details {
+.project-readme ul, .project-readme ol {
+  padding-left: 1.8rem;
+  margin: 0.8rem 0;
+}
+.project-readme li {
+  margin-bottom: 0.35rem;
+}
+.project-readme table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.project-readme th, .project-readme td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+.project-readme th {
+  background: var(--bg-soft);
+  font-weight: 700;
+}
+.project-readme hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+.project-readme h1, .project-readme h3, .project-readme h4, .project-readme h5, .project-readme h6 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  color: var(--text);
+}
+details.env-details {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 0.8rem 1rem;
+  padding: 0.7rem 1rem;
   margin: 1rem 0;
   background: var(--bg-soft);
 }
-.env-details summary {
+details.env-details summary {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
-  margin-bottom: 0.6rem;
+  user-select: none;
+  margin-bottom: 0.5rem;
 }
-.env-details pre {
+details.env-details[open] summary {
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+details.env-details pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
@@ -854,12 +905,14 @@ main { flex: 1; }
   font-size: 1.5rem;
   margin-bottom: 1rem;
   text-align: center;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
 }
 .project-readme {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.4rem;
+  padding: 1.8rem;
   overflow-x: auto;
   line-height: 1.7;
   font-size: 0.95rem;
@@ -872,13 +925,17 @@ main { flex: 1; }
 }
 .project-readme a {
   color: var(--accent);
+  text-decoration: none;
+}
+.project-readme a:hover {
   text-decoration: underline;
 }
 .project-readme code {
   background: var(--bg-soft);
-  padding: 0.15rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   border-radius: 6px;
-  font-size: 0.9em;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 .project-readme pre {
   background: var(--bg-soft);
@@ -888,26 +945,71 @@ main { flex: 1; }
   overflow-x: auto;
   line-height: 1.6;
 }
+.project-readme pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.85em;
+}
 .project-readme blockquote {
   border-left: 4px solid var(--accent);
   padding-left: 1rem;
   margin: 1rem 0;
   color: var(--text-dim);
 }
-.env-details {
+.project-readme ul, .project-readme ol {
+  padding-left: 1.8rem;
+  margin: 0.8rem 0;
+}
+.project-readme li {
+  margin-bottom: 0.35rem;
+}
+.project-readme table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.project-readme th, .project-readme td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+.project-readme th {
+  background: var(--bg-soft);
+  font-weight: 700;
+}
+.project-readme hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+.project-readme h1, .project-readme h3, .project-readme h4, .project-readme h5, .project-readme h6 {
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  color: var(--text);
+}
+details.env-details {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 0.8rem 1rem;
+  padding: 0.7rem 1rem;
   margin: 1rem 0;
   background: var(--bg-soft);
 }
-.env-details summary {
+details.env-details summary {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--text);
   cursor: pointer;
-  margin-bottom: 0.6rem;
+  user-select: none;
+  margin-bottom: 0.5rem;
 }
-.env-details pre {
+details.env-details[open] summary {
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+details.env-details pre {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;

@@ -87,16 +87,12 @@
         if (m) {
           const [, owner, repo] = m;
           const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
-            headers: { Accept: "application/vnd.github.raw+json" }
+            headers: { Accept: "application/vnd.github.html+json" }
           });
           const el = document.getElementById("readme");
           if (rr.ok) {
-            let html = await rr.text();
-            html = html.replace(
-              /<environment_details>([\s\S]*?)<\/environment_details>/g,
-              '<details class="env-details"><summary>environment</summary><pre>$1</pre></details>'
-            );
-            el.innerHTML = html;
+            const data = await rr.json();
+            el.innerHTML = data.html || "<p>Brak README dla tego repozytorium.</p>";
           } else {
             el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
           }
