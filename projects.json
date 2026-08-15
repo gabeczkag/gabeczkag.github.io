@@ -5,6 +5,11 @@
       "url": "https://github.com/gabeczkag/gabeczkag.github.io",
       "description": "HUB",
       "endpoints": []
+    },
+    {
+      "name": "MoE-Nexus",
+      "url": "https://github.com/gabeczkag/MoE-Nexus",
+      "description": "Framework do optymalizacji i serwowania architektury Mixture of Experts (MoE) w produkcji. Router pruning, load balancing, serving layer."
     }
   ],
   "effects": {
