@@ -877,6 +877,12 @@ main { flex: 1; }
 .project-readme {
   text-align: left;
 }
+.project-readme > *:first-child {
+  margin-top: 0;
+}
+.project-readme > *:last-child {
+  margin-bottom: 0;
+}
 .project-readme h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
@@ -905,6 +911,9 @@ main { flex: 1; }
 }
 .project-readme a:hover {
   text-decoration: underline;
+}
+.project-readme p {
+  margin: 0.8rem 0;
 }
 .project-readme code {
   background: var(--bg-soft);
@@ -955,16 +964,41 @@ main { flex: 1; }
   background: var(--bg-soft);
   font-weight: 700;
 }
+.project-readme td[align="center"] {
+  text-align: center;
+}
+.project-readme td[align="right"] {
+  text-align: right;
+}
+.project-readme td[align="left"] {
+  text-align: left;
+}
 .project-readme hr {
   border: none;
   border-top: 1px solid var(--border);
   margin: 1.5rem 0;
 }
-.project-readme h1, .project-readme h3, .project-readme h4, .project-readme h5, .project-readme h6 {
+.project-readme h1, .project-readme h2, .project-readme h3, .project-readme h4, .project-readme h5, .project-readme h6 {
   margin-top: 1.4rem;
   margin-bottom: 0.6rem;
   font-weight: 700;
   color: var(--text);
+}
+.project-readme h1 {
+  font-size: 2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+}
+.project-readme h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+}
+.project-readme h3 {
+  font-size: 1.25rem;
+}
+.project-readme h4 {
+  font-size: 1.1rem;
 }
 details.env-details {
   border: 1px solid var(--border);
@@ -979,11 +1013,20 @@ details.env-details summary {
   cursor: pointer;
   user-select: none;
   margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 details.env-details[open] summary {
   margin-bottom: 0.7rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
+}
+details.env-details .env-details-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-dim);
 }
 details.env-details pre {
   margin: 0;

@@ -84,8 +84,17 @@
         }
 
         const el = document.getElementById("readme");
+        const toHtml = (raw) => {
+          if (!raw) return "<p>Brak README dla tego repozytorium.</p>";
+          let html = raw;
+          html = html.replace(
+            /<environment_details>([\s\S]*?)<\/environment_details>/g,
+            '<details class="env-details"><summary>environment</summary><div class="env-details-body">$1</div></details>'
+          );
+          return html;
+        };
         if (project.readmeHtml) {
-          el.innerHTML = project.readmeHtml;
+          el.innerHTML = toHtml(project.readmeHtml);
         } else {
           const m = project.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
           if (m) {
@@ -98,7 +107,7 @@
               if (ct.includes("application/json")) {
                 try {
                   const data = await rr.json();
-                  el.innerHTML = data.html || "<p>Brak README dla tego repozytorium.</p>";
+                  el.innerHTML = toHtml(data.html);
                 } catch (e) {
                   el.innerHTML = "<p>Nie udało się sparsować README.</p>";
                 }
