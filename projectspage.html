@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projekt</title>
   <link rel="stylesheet" href="/assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>
 </head>
 <body>
   <div class="plasma-bg" aria-hidden="true">
@@ -84,43 +85,44 @@
         }
 
         const el = document.getElementById("readme");
-        const toHtml = (raw) => {
-          if (!raw) return "<p>Brak README dla tego repozytorium.</p>";
-          let html = raw;
-          html = html.replace(
-            /<environment_details>([\s\S]*?)<\/environment_details>/g,
-            '<details class="env-details"><summary>environment</summary><div class="env-details-body">$1</div></details>'
-          );
-          return html;
-        };
-        if (project.readmeHtml) {
-          el.innerHTML = toHtml(project.readmeHtml);
-        } else {
+        const renderReadme = async (project) => {
           const m = project.url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-          if (m) {
-            const [, owner, repo] = m;
-            const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
-              headers: { Accept: "application/vnd.github.html+json" }
-            });
-            if (rr.ok) {
-              const ct = rr.headers.get("content-type") || "";
-              if (ct.includes("application/json")) {
-                try {
-                  const data = await rr.json();
-                  el.innerHTML = toHtml(data.html);
-                } catch (e) {
-                  el.innerHTML = "<p>Nie udało się sparsować README.</p>";
-                }
-              } else {
-                const text = await rr.text();
-                el.innerHTML = `<pre>${text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c)}</pre>`;
-              }
-            } else {
-              el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
-            }
-          } else {
+          if (!m) {
             el.innerHTML = "<p>Nie można pobrać README (nieprawidłowy URL repo).</p>";
+            return;
           }
+          const [, owner, repo] = m;
+
+          try {
+            const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
+              headers: { Accept: "application/vnd.github.raw+json" }
+            });
+            if (!rr.ok) {
+              el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
+              return;
+            }
+            const text = await rr.text();
+
+            if (typeof marked !== "undefined") {
+              const html = marked.parse(text, {
+                gfm: true,
+                breaks: true,
+                headerIds: false,
+                mangle: false
+              });
+              el.innerHTML = html;
+            } else {
+              el.innerHTML = "<pre>" + text.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c] || c) + "</pre>";
+            }
+          } catch (e) {
+            el.innerHTML = "<p>Nie udało się pobrać README.</p>";
+          }
+        };
+
+        if (project.readmeHtml) {
+          el.innerHTML = marked.parse(project.readmeHtml, { gfm: true, breaks: true, headerIds: false, mangle: false });
+        } else {
+          await renderReadme(project);
         }
 
         document.getElementById("loading").hidden = true;
