@@ -37,9 +37,7 @@
 
       <section class="project-readme" id="readmeSection">
         <h2>Readme</h2>
-        <div class="project-readme-pre-wrap">
-          <pre id="readme" class="project-readme-pre"></pre>
-        </div>
+        <div id="readme" class="project-readme"></div>
       </section>
     </section>
 
@@ -91,14 +89,19 @@
           const rr = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
             headers: { Accept: "application/vnd.github.raw+json" }
           });
-          const pre = document.getElementById("readme");
+          const el = document.getElementById("readme");
           if (rr.ok) {
-            pre.textContent = await rr.text();
+            let html = await rr.text();
+            html = html.replace(
+              /<environment_details>([\s\S]*?)<\/environment_details>/g,
+              '<details class="env-details"><summary>environment</summary><pre>$1</pre></details>'
+            );
+            el.innerHTML = html;
           } else {
-            pre.textContent = "Brak README dla tego repozytorium.";
+            el.innerHTML = "<p>Brak README dla tego repozytorium.</p>";
           }
         } else {
-          document.getElementById("readme").textContent = "Nie można pobrać README (nieprawidłowy URL repo).";
+          document.getElementById("readme").innerHTML = "<p>Nie można pobrać README (nieprawidłowy URL repo).</p>";
         }
 
         document.getElementById("loading").hidden = true;
