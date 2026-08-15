@@ -3,7 +3,8 @@
     {
       "name": "gabeczkag.github.io",
       "url": "https://github.com/gabeczkag/gabeczkag.github.io",
-      "description": "HUB"
+      "description": "HUB",
+      "endpoints": []
     }
   ],
   "effects": {
