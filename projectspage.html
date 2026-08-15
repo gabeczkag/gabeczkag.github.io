@@ -68,7 +68,8 @@
         if (!r.ok) throw new Error("Nie udało się wczytać listy projektów.");
         const raw = await r.json();
         const projects = Array.isArray(raw) ? raw : (Array.isArray(raw.projects) ? raw.projects : []);
-        const project = projects.find(p => p.name === name);
+        const favorites = Array.isArray(raw.favorites) ? raw.favorites : [];
+        const project = projects.find(p => p.name === name) || favorites.find(p => p.name === name);
         if (!project) throw new Error(`Projekt "${name}" nie został znaleziony.`);
 
         document.getElementById("projName").textContent = project.name;
