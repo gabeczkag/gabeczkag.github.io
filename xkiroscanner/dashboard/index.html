@@ -104,7 +104,9 @@ document.getElementById('connectBtn').onclick = () => {
   document.getElementById('key').value = '';
   dlg.showModal();
 };
-document.getElementById('cancelBtn').onclick = () => dlg.close();
+document.getElementById('cancelBtn').onclick = () => { savedKey = ''; dlg.close(); };
+
+let savedKey = ''; // klucz między etapami (input czyszczony od razu po odczycie)
 
 document.getElementById('okBtn').onclick = async () => {
   const btn = document.getElementById('okBtn');
@@ -113,9 +115,11 @@ document.getElementById('okBtn').onclick = async () => {
     if (phase === 'key') {
       // Etap 1: /check/{id} - weryfikacja klucza (Supabase Edge Function)
       st.textContent = 'Sprawdzam klucz...';
+      savedKey = document.getElementById('key').value;
+      document.getElementById('key').value = '';
       const r = await fetch(API + '/xkiro-check/' + installationId, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ xkiroKey: document.getElementById('key').value }),
+        body: JSON.stringify({ xkiroKey: savedKey }),
       });
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || 'Błąd');
@@ -133,7 +137,7 @@ document.getElementById('okBtn').onclick = async () => {
       const r = await fetch(API + '/xkiro-add/' + installationId, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          xkiroKey: document.getElementById('key').value,
+          xkiroKey: savedKey,
           repo: document.getElementById('repoSel').value,
           name: document.getElementById('name').value || 'default',
         }),
@@ -148,12 +152,14 @@ document.getElementById('okBtn').onclick = async () => {
       st.textContent = '';
       phase = 'done';
     } else {
+      savedKey = '';
       dlg.close();
     }
   } catch (e) {
     st.innerHTML = '<span class="err">❌ ' + e.message + '</span>';
   } finally {
-    if (phase !== 'done') document.getElementById('key').value = '';
+    document.getElementById('key').value = '';
+    if (phase === 'done') savedKey = '';
     btn.disabled = false;
   }
 };
