@@ -8,17 +8,17 @@
   :root { color-scheme: dark; }
   body { font-family: system-ui, sans-serif; background: #14101c; color: #f3ecff; margin: 0;
     min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .wrap { text-align: center; max-width: 420px; }
+  .wrap { text-align: center; max-width: 460px; }
   h1 { font-size: 1.3rem; margin-bottom: 8px; }
   p { color: #b9a8d9; font-size: .9rem; }
   #connectBtn { margin-top: 20px; padding: 14px 34px; border-radius: 12px; border: 0; cursor: pointer;
     font-size: 1rem; font-weight: 800; background: linear-gradient(135deg, #ff7e5f, #ff9a4d); color: #1a0f00; }
   dialog { background: #1f1830; color: #f3ecff; border: 1px solid #3a2d5c; border-radius: 14px;
-    padding: 24px; width: min(400px, 90vw); }
+    padding: 24px; width: min(440px, 92vw); text-align: left; }
   dialog::backdrop { background: rgba(0,0,0,.6); }
   dialog input, dialog select { width: 100%; padding: 10px; margin-top: 6px; border-radius: 8px;
     border: 1px solid #3a2d5c; background: #120e1c; color: #fff; box-sizing: border-box; }
-  dialog label { display: block; margin-top: 12px; font-size: .85rem; text-align: left; }
+  dialog label { display: block; margin-top: 12px; font-size: .85rem; }
   dialog .row { display: flex; gap: 10px; margin-top: 18px; }
   dialog .row button { flex: 1; padding: 11px; border-radius: 10px; border: 0; cursor: pointer; font-weight: 700; }
   #okBtn { background: linear-gradient(135deg, #ff7e5f, #ff9a4d); color: #1a0f00; }
@@ -26,6 +26,7 @@
   #dlgStatus { min-height: 1.5em; margin-top: 12px; font-size: .88rem; }
   .ok { color: #7dffb2; } .err { color: #ff8f8f; }
   code { background: #120e1c; padding: 2px 6px; border-radius: 6px; word-break: break-all; }
+  pre { background: #120e1c; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: .75rem; text-align: left; }
   a { color: #ffb88c; }
 </style>
 </head>
@@ -48,6 +49,11 @@
     <label>Nazwa (wejdzie w nazwę secreta)</label>
     <input id="name" placeholder="prod" maxlength="32">
   </div>
+  <div id="stepDone" hidden>
+    <p class="ok">✅ Gotowe! Zapisano secret <code id="doneSecret"></code></p>
+    <p>Ostatni krok — dodaj ten workflow do repo (<code>.github/workflows/xkiro-scan.yml</code>):</p>
+    <pre id="doneSnippet"></pre>
+  </div>
   <div id="dlgStatus"></div>
   <div class="row">
     <button id="cancelBtn">Anuluj</button>
@@ -56,8 +62,7 @@
 </dialog>
 
 <script>
-// prod: podmień na adres bota z Railway, np. https://twoj-projekt.up.railway.app
-const API = localStorage.getItem('xkiro_api') || 'http://localhost:3000';
+const API = 'https://ituuiyflbeefjmvjbjac.supabase.co/functions/v1';
 const APP_INSTALL_URL = 'https://github.com/apps/xkiro-secret-scanner/installations/new';
 const q = new URLSearchParams(location.search);
 const installationId = q.get('installation_id');
@@ -70,6 +75,10 @@ if (q.get('setup_action') === 'install' && installationId) {
   document.getElementById('sub').textContent = 'App zainstalowana ✅ — kliknij Connect xKiro.';
 }
 
+function snippet(secret, reporter, supabaseUrl) {
+  return 'name: xKiro Secret Scan\n\non:\n  push:\n  pull_request:\n\npermissions:\n  contents: read\n\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - name: Skan co commit\n        env:\n          XKiro_API_KEY: ${{ secrets.' + secret + ' }}\n          SUPABASE_URL: ' + supabaseUrl + '\n          XKIRO_REPORTER_TOKEN: ${{ secrets.' + reporter + ' }}\n        run: |\n          curl -sL https://raw.githubusercontent.com/gabeczkag/xkiro-github-scanner/master/scripts/scan-actions.js -o scan.js\n          curl -sL https://raw.githubusercontent.com/gabeczkag/xkiro-github-scanner/master/lib/scanner.js -o scanner.js\n          mkdir -p lib && mv scanner.js lib/scanner.js && node scan.js';
+}
+
 document.getElementById('connectBtn').onclick = () => {
   if (!installationId) {
     st.innerHTML = 'Najpierw <a href="' + APP_INSTALL_URL + '">zainstaluj App</a> — wrócisz tu z potwierdzeniem.';
@@ -77,6 +86,7 @@ document.getElementById('connectBtn').onclick = () => {
     phase = 'key';
     document.getElementById('stepKey').hidden = false;
     document.getElementById('stepRepo').hidden = true;
+    document.getElementById('stepDone').hidden = true;
     document.getElementById('okBtn').textContent = 'Dalej';
     st.textContent = '';
   }
@@ -90,9 +100,9 @@ document.getElementById('okBtn').onclick = async () => {
   btn.disabled = true;
   try {
     if (phase === 'key') {
-      // Etap 1: /check/{id} - weryfikacja klucza
+      // Etap 1: /check/{id} - weryfikacja klucza (Supabase Edge Function)
       st.textContent = 'Sprawdzam klucz...';
-      const r = await fetch(API + '/xkiro/check/' + installationId, {
+      const r = await fetch(API + '/xkiro-check/' + installationId, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ xkiroKey: document.getElementById('key').value }),
       });
@@ -107,9 +117,9 @@ document.getElementById('okBtn').onclick = async () => {
       st.textContent = '';
       phase = 'repo';
     } else if (phase === 'repo') {
-      // Etap 2: /add/ - zapis secreta w backendzie
+      // Etap 2: /add/{id} - zapis secretów w backendzie
       st.textContent = 'Zapisuję...';
-      const r = await fetch(API + '/xkiro/add/' + installationId, {
+      const r = await fetch(API + '/xkiro-add/' + installationId, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           xkiroKey: document.getElementById('key').value,
@@ -120,8 +130,11 @@ document.getElementById('okBtn').onclick = async () => {
       const d = await r.json();
       if (!d.ok) throw new Error(d.error || 'Błąd');
       document.getElementById('stepRepo').hidden = true;
+      document.getElementById('stepDone').hidden = false;
+      document.getElementById('doneSecret').textContent = d.secretName;
+      document.getElementById('doneSnippet').textContent = snippet(d.secretName, d.reporterSecret, 'https://ituuiyflbeefjmvjbjac.supabase.co');
       document.getElementById('okBtn').textContent = 'Zamknij';
-      st.innerHTML = '<span class="ok">✅ Gotowe! Secret <code>' + d.secretName + '</code></span>';
+      st.textContent = '';
       phase = 'done';
     } else {
       dlg.close();
