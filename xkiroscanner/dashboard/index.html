@@ -27,6 +27,15 @@
   .ok { color: #7dffb2; } .err { color: #ff8f8f; }
   code { background: #120e1c; padding: 2px 6px; border-radius: 6px; word-break: break-all; }
   pre { background: #120e1c; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: .75rem; text-align: left; }
+  .scan { background: #1f1830; border: 1px solid #3a2d5c; border-radius: 10px;
+    padding: 12px; margin-top: 10px; text-align: left; font-size: .85rem; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-weight: 700; font-size: .78rem; }
+  .b-success { background: #123d24; color: #7dffb2; }
+  .b-neutral { background: #3d3312; color: #ffd97d; }
+  .b-failure { background: #3d1212; color: #ff8f8f; }
+  .finding { color: #d9c9f5; margin: 4px 0 4px 12px; }
+  #refreshBtn { margin-top: 12px; padding: 8px 18px; border-radius: 8px; border: 1px solid #3a2d5c;
+    background: #2c2344; color: #f3ecff; cursor: pointer; }
   a { color: #ffb88c; }
 </style>
 </head>
@@ -35,6 +44,11 @@
   <h1>🔌 xKiro Scanner</h1>
   <p id="sub">Podłącz repo do xKiro jednym klikiem.</p>
   <button id="connectBtn">Connect xKiro</button>
+  <div id="statusWrap" hidden>
+    <h2 style="margin-top:28px;font-size:1.05rem;">📊 Ostatnie skany</h2>
+    <div id="statusList"></div>
+    <button id="refreshBtn">Odśwież</button>
+  </div>
 </div>
 
 <dialog id="dlg">
@@ -81,6 +95,37 @@ let phase = 'key'; // key -> repo -> done
 if (q.get('setup_action') === 'install' && installationId) {
   document.getElementById('sub').textContent = 'App zainstalowana ✅ — kliknij Connect xKiro.';
 }
+
+async function loadStatus() {
+  if (!installationId) return;
+  const box = document.getElementById('statusList');
+  box.innerHTML = '<p>Ładowanie...</p>';
+  try {
+    const r = await fetch(API + '/xkiro-status/' + installationId);
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Błąd');
+    document.getElementById('statusWrap').hidden = false;
+    if (!d.scans || d.scans.length === 0) {
+      box.innerHTML = '<p>Brak skanów. Zrób push w podpiętym repo - wynik pojawi się tu w ~10s.</p>';
+      return;
+    }
+    box.innerHTML = d.scans.map((s) => {
+      const badge = s.conclusion === 'success' ? 'b-success' : s.conclusion === 'failure' ? 'b-failure' : 'b-neutral';
+      const icon = s.conclusion === 'success' ? '✅' : s.conclusion === 'failure' ? '🔴' : '⚠️';
+      const finds = (s.findings || []).slice(0, 10).map((f) =>
+        '<div class="finding">• <b>' + f.severity + '</b> <code>' + f.rule + '</code> w <code>' +
+        f.file + ':' + f.line + '</code> — ' + f.desc + '</div>').join('');
+      return '<div class="scan"><span class="badge ' + badge + '">' + icon + ' ' + s.conclusion + '</span> ' +
+        '<code>' + s.repo + '@' + String(s.sha).slice(0, 7) + '</code><br>' +
+        '<span class="muted" style="color:#b9a8d9">' + s.total + ' znalezisk (' + s.high_count + ' HIGH) · ' +
+        s.source + ' · ' + new Date(s.created_at).toLocaleString('pl-PL') + '</span>' + finds + '</div>';
+    }).join('');
+  } catch (e) {
+    box.innerHTML = '<p class="err">❌ ' + e.message + '</p>';
+  }
+}
+document.getElementById('refreshBtn').onclick = loadStatus;
+loadStatus();
 
 function snippet(secret, reporter, supabaseUrl) {
   return 'name: xKiro Secret Scan\n\non:\n  push:\n  pull_request:\n\npermissions:\n  contents: read\n\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - name: Skan co commit\n        env:\n          XKiro_API_KEY: ${{ secrets.' + secret + ' }}\n          SUPABASE_URL: ' + supabaseUrl + '\n          XKIRO_REPORTER_TOKEN: ${{ secrets.' + reporter + ' }}\n        run: |\n          curl -sL https://raw.githubusercontent.com/gabeczkag/xkiro-github-scanner/master/scripts/scan-actions.js -o scan.js\n          curl -sL https://raw.githubusercontent.com/gabeczkag/xkiro-github-scanner/master/lib/scanner.js -o scanner.js\n          mkdir -p lib && mv scanner.js lib/scanner.js && node scan.js';
