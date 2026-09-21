@@ -54,6 +54,13 @@
     <p>Ostatni krok — dodaj ten workflow do repo (<code>.github/workflows/xkiro-scan.yml</code>):</p>
     <pre id="doneSnippet"></pre>
   </div>
+  <div id="stepNoApp" hidden>
+    <p>Najpierw zainstaluj App na repo — GitHub wróci Cię na tę stronę z numerem instalacji.</p>
+    <div class="row">
+      <a id="installLink" href="#" target="_blank" rel="noopener"
+         style="flex:1;text-align:center;padding:11px;border-radius:10px;font-weight:700;text-decoration:none;background:linear-gradient(135deg,#ff7e5f,#ff9a4d);color:#1a0f00;">Install App</a>
+    </div>
+  </div>
   <div id="dlgStatus"></div>
   <div class="row">
     <button id="cancelBtn">Anuluj</button>
@@ -65,7 +72,7 @@
 const API = 'https://ituuiyflbeefjmvjbjac.supabase.co/functions/v1';
 const APP_INSTALL_URL = 'https://github.com/apps/xkiro-secret-scanner/installations/new';
 const q = new URLSearchParams(location.search);
-const installationId = q.get('installation_id');
+const installationId = /^[0-9]+$/.test(q.get('installation_id') || '') ? q.get('installation_id') : null;
 
 const dlg = document.getElementById('dlg');
 const st = document.getElementById('dlgStatus');
@@ -80,13 +87,17 @@ function snippet(secret, reporter, supabaseUrl) {
 }
 
 document.getElementById('connectBtn').onclick = () => {
-  if (!installationId) {
-    st.innerHTML = 'Najpierw <a href="' + APP_INSTALL_URL + '">zainstaluj App</a> — wrócisz tu z potwierdzeniem.';
+  const noApp = !installationId;
+  document.getElementById('stepNoApp').hidden = !noApp;
+  document.getElementById('stepKey').hidden = noApp;
+  document.getElementById('stepRepo').hidden = true;
+  document.getElementById('stepDone').hidden = true;
+  document.getElementById('okBtn').style.display = noApp ? 'none' : '';
+  if (noApp) {
+    document.getElementById('installLink').href = APP_INSTALL_URL;
+    st.textContent = '';
   } else {
     phase = 'key';
-    document.getElementById('stepKey').hidden = false;
-    document.getElementById('stepRepo').hidden = true;
-    document.getElementById('stepDone').hidden = true;
     document.getElementById('okBtn').textContent = 'Dalej';
     st.textContent = '';
   }
