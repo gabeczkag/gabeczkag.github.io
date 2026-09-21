@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xKiro Scanner — Dashboard / Connect</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; background: #14101c; color: #f3ecff; margin: 0; padding: 24px; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .card { background: #1f1830; border: 1px solid #3a2d5c; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.05rem; color: #ffb88c; }
+  label { display: block; margin: 10px 0 4px; font-size: .9rem; }
+  input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #3a2d5c; background: #120e1c; color: #fff; box-sizing: border-box; }
+  button, .btn { display: inline-block; margin-top: 14px; padding: 12px 18px; border-radius: 10px; border: 0; cursor: pointer;
+    background: linear-gradient(135deg, #ff7e5f, #ff9a4d); color: #1a0f00; font-weight: 700; text-decoration: none; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .ok { color: #7dffb2; } .err { color: #ff8f8f; }
+  code { background: #120e1c; padding: 2px 6px; border-radius: 6px; }
+  .muted { color: #b9a8d9; font-size: .85rem; }
+  #status { min-height: 1.5em; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔌 xKiro Scanner — Connect</h1>
+  <p class="muted">Podłącz repo do xKiro: klucz trafi <b>prosto do secretów Twojego repo</b> jako <code>{randomID}_{name}_xkiroapikey</code>. Bot tylko zapisuje (write-only), nigdy nie pokazuje ani nie loguje klucza.</p>
+  <div id="installed" class="card" hidden>✅ GitHub App zainstalowana (installation <code id="instId"></code>). Teraz podłącz klucz poniżej.</div>
+
+  <div class="card">
+    <h2>Krok 1 — Instalacja GitHub App</h2>
+    <p class="muted">Jeśli jeszcze nie zainstalowałeś scannera na repo:</p>
+    <a class="btn" id="installBtn" href="https://github.com/apps/xkiro-secret-scanner/installations/new" target="_blank" rel="noopener">Install xKiro Scanner</a>
+    <p class="muted">Po instalacji GitHub wróci na tę stronę z potwierdzeniem.</p>
+  </div>
+
+  <div class="card">
+    <h2>Krok 2 — Podłącz klucz xKiro</h2>
+    <label>Adres API bota (mini-bot /xkiro/connect)</label>
+    <input id="api" value="http://localhost:3000">
+    <label>Repo owner (np. gabeczkag)</label>
+    <input id="owner" placeholder="gabeczkag">
+    <label>Repo name</label>
+    <input id="repo" placeholder="moje-repo">
+    <label>Nazwa (name) — wejdzie w nazwę secreta</label>
+    <input id="name" placeholder="prod" maxlength="32">
+    <label>Klucz xKiro API</label>
+    <input id="key" type="password" autocomplete="off" placeholder="xkiro_...">
+    <label>Twój GitHub token (fine-grained PAT, tylko to repo, uprawnienie <b>Secrets: write</b>)</label>
+    <input id="gh" type="password" autocomplete="off" placeholder="github_pat_...">
+    <button id="go">Connect — zapisz secret</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>Krok 3 — Użyj secreta w Actions</h2>
+    <p class="muted">Po zapisie dostaniesz nazwę secreta, np. <code>a1b2c3d4_prod_xkiroapikey</code>. W workflow użyj:</p>
+    <code>XKiro_API_KEY: ${{ secrets.A1B2C3D4_PROD_XKIROAPIKEY }}</code>
+    <p class="muted">(nazwy secretów są case-insensitive — skopiuj dokładnie to, co zwróci bot)</p>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+// prod: podmień value pola #api na adres z Railway, np. https://twoj-projekt.up.railway.app
+(function () {
+  const q = new URLSearchParams(location.search);
+  if (q.get('setup_action') === 'install' && q.get('installation_id')) {
+    $('installed').hidden = false;
+    $('instId').textContent = q.get('installation_id');
+  }
+  if (location.hostname !== 'localhost' && $('api').value.includes('localhost')) {
+    // spróbuj zgadnąć prodowy backend z localStorage (zapisany wcześniej)
+    const saved = localStorage.getItem('xkiro_api');
+    if (saved) $('api').value = saved;
+  }
+})();
+$('go').onclick = async () => {
+  const btn = $('go'), st = $('status');
+  const body = {
+    owner: $('owner').value.trim(),
+    repo: $('repo').value.trim(),
+    name: $('name').value.trim() || 'default',
+    xkiroKey: $('key').value,
+    githubToken: $('gh').value,
+  };
+  if (!body.owner || !body.repo || !body.xkiroKey || !body.githubToken) {
+    st.innerHTML = '<span class="err">Uzupełnij wszystkie pola.</span>'; return;
+  }
+  const api = $('api').value.replace(/\/$/, '');
+  localStorage.setItem('xkiro_api', api);
+  btn.disabled = true;
+  st.textContent = 'Zapisuję...';
+  try {
+    const r = await fetch(api + '/xkiro/connect', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      st.innerHTML = '✅ Zapisano secret <code>' + d.secretName + '</code> w <code>' + d.repo + '</code>';
+    } else {
+      st.innerHTML = '<span class="err">❌ ' + (d.error || 'Błąd') + '</span>';
+    }
+  } catch (e) {
+    st.innerHTML = '<span class="err">❌ Brak połączenia z botem (' + api + '). Odpal bota lokalnie albo ustaw adres prod.</span>';
+  } finally {
+    $('key').value = ''; $('gh').value = ''; btn.disabled = false;
+  }
+};
+</script>
+</body>
+</html>
