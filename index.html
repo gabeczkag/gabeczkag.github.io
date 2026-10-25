@@ -3,91 +3,894 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Hub projektów GabeczkaG — zbiór moich repozytoriów i prac open-source.">
-<title>GabeczkaGWeb — Moje projekty</title>
-<link rel="stylesheet" href="assets/css/style.css">
+<title>GabeczkaG DevKit — skille, boty, installer</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="description" content="Skille, boty i installer dla Claude i OpenCode. 115 skilli, mini database i TUI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#131010;
+    --bg-deep:#0d0b0b;
+    --bg-panel:#191515;
+    --bg-panel-2:#1e1919;
+    --text:#f2eded;
+    --muted:#b8b2b2;
+    --dim:#7d7575;
+    --line:#3d3838;
+    --line-soft:#2a2626;
+    --white:#f2eded;
+    --black:#131010;
+    --mono:"IBM Plex Mono","Berkeley Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--mono);font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--text);color:var(--black)}
+  a{color:inherit;text-decoration:none}
+  button,input{font:inherit}
+  button{cursor:pointer}
+  code{font-family:var(--mono)}
+  .shell{max-width:var(--maxw);margin:0 auto;padding:0 40px}
+  .preview-tag{
+    position:fixed;right:14px;bottom:14px;z-index:80;
+    background:var(--text);color:var(--black);padding:6px 8px;
+    font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    border-radius:2px;
+  }
+  .site-header{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:50}
+  .header-inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;letter-spacing:-.02em}
+  .logo-mark{
+    width:25px;height:25px;border:1px solid var(--line);display:grid;place-items:center;
+    font-size:11px;font-weight:600;color:var(--text);background:var(--bg-deep);
+  }
+  .logo small{display:block;font-size:9px;letter-spacing:.18em;color:var(--dim);font-weight:400;margin-top:1px}
+  .nav{display:flex;align-items:center;gap:24px;font-size:13px;color:var(--muted)}
+  .nav a:hover{color:var(--text)}
+  .header-actions{display:flex;align-items:center;gap:10px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid transparent;border-radius:3px;padding:7px 12px;
+    font-size:12px;font-weight:500;line-height:1.2;transition:background .15s,color .15s,border-color .15s;
+  }
+  .btn-solid{background:var(--text);color:var(--black)}
+  .btn-solid:hover{background:#fff}
+  .btn-outline{border-color:var(--line);color:var(--text);background:transparent}
+  .btn-outline:hover{border-color:var(--text)}
+  .hero{padding:64px 0 46px}
+  .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:0 0 18px}
+  .hero h1{
+    margin:0 0 14px;font-size:clamp(28px,4.2vw,38px);line-height:1.28;
+    font-weight:700;letter-spacing:-.035em;max-width:900px;
+  }
+  .hero-sub{margin:0;color:var(--muted);font-size:14px;line-height:1.7;max-width:700px}
+  .install-widget{margin-top:28px;border:1px solid var(--line);border-radius:3px;background:var(--bg-deep);max-width:760px}
+  .install-tabs{display:flex;gap:0;border-bottom:1px solid var(--line-soft);padding:0 10px;overflow-x:auto}
+  .install-tab{
+    appearance:none;background:transparent;border:0;color:var(--dim);
+    font-size:11px;padding:9px 9px;border-bottom:1px solid transparent;letter-spacing:.02em;
+  }
+  .install-tab:hover{color:var(--text)}
+  .install-tab.active{color:var(--text);border-bottom-color:var(--text)}
+  .install-row{display:flex;align-items:center;gap:10px;padding:11px 13px}
+  .install-cmd{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;color:var(--muted);font-size:12px}
+  .install-cmd::before{content:"$ ";color:var(--dim)}
+  .copy-btn{
+    appearance:none;background:transparent;border:0;color:var(--dim);padding:2px;
+    display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+  .copy-btn:hover{color:var(--text)}
+  .copy-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .hero-links{display:flex;gap:22px;margin-top:18px;font-size:12px;color:var(--muted)}
+  .hero-links a:hover{color:var(--text);text-decoration:underline}
+  .hero-visual{padding:0 0 54px}
+  .tui{
+    border:1px solid var(--line);border-radius:3px;overflow:hidden;
+    background:var(--bg-deep);
+  }
+  .tui-bar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);background:#0b0909}
+  .tui-dots{display:flex;gap:4px}
+  .tui-dots i{display:block;width:6px;height:6px;border-radius:50%;background:var(--line)}
+  .tui-title{font-size:11px;color:var(--muted)}
+  .tui-meta{margin-left:auto;font-size:10px;color:var(--dim);letter-spacing:.04em}
+  .tui-tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;background:var(--bg-deep)}
+  .tui-tab{
+    appearance:none;background:transparent;border:0;border-bottom:1px solid transparent;
+    color:var(--dim);font-size:11px;letter-spacing:.03em;padding:11px 14px;white-space:nowrap;
+  }
+  .tui-tab:hover{color:var(--text)}
+  .tui-tab.active{color:var(--text);border-bottom-color:var(--text)}
+  .tui-body{display:grid;grid-template-columns:190px minmax(0,1fr) 300px;min-height:500px}
+  .tui-body.no-side{grid-template-columns:minmax(0,1fr) 300px}
+  .tui-body.no-side .tui-side{display:none}
+  .tui-side{border-right:1px solid var(--line);padding:15px 12px;background:var(--bg-deep)}
+  .side-label{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 8px;padding-left:5px}
+  .filter{
+    width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    appearance:none;background:transparent;border:0;border-left:1px solid transparent;
+    color:var(--muted);font-size:11px;padding:7px 5px;text-align:left;
+  }
+  .filter:hover{color:var(--text);background:var(--bg-panel)}
+  .filter.active{color:var(--text);border-left-color:var(--text);padding-left:9px}
+  .filter .count{color:var(--dim);font-size:10px}
+  .filter.active .count{color:var(--muted)}
+  .search-wrap{margin-top:13px}
+  .search{
+    width:100%;background:var(--bg);border:1px solid var(--line-soft);border-radius:2px;
+    color:var(--text);font-size:11px;padding:8px;outline:none;
+  }
+  .search::placeholder{color:var(--dim)}
+  .search:focus{border-color:var(--muted)}
+  .side-note{margin-top:14px;color:var(--dim);font-size:9px;line-height:1.7;border-top:1px solid var(--line-soft);padding-top:10px}
+  .side-note strong{color:var(--muted);font-weight:500}
+  .tui-main{min-width:0;padding:12px 10px}
+  .list-head{display:flex;justify-content:space-between;gap:10px;padding:0 6px 9px;color:var(--dim);font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+  .skill-list{display:flex;flex-direction:column;gap:1px;max-height:410px;overflow:auto;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .skill-list::-webkit-scrollbar{width:6px}
+  .skill-list::-webkit-scrollbar-thumb{background:var(--line)}
+  .skill-row{
+    display:grid;grid-template-columns:15px minmax(0,1fr) auto;gap:10px;align-items:start;
+    padding:9px 8px;border-left:1px solid transparent;border-bottom:1px solid transparent;color:var(--text);
+  }
+  .skill-row:hover{background:var(--bg-panel)}
+  .skill-row.selected{background:var(--bg-panel);border-left-color:var(--text)}
+  .check{
+    appearance:none;width:13px;height:13px;margin:1px 0 0;border:1px solid var(--line);
+    border-radius:1px;background:transparent;position:relative;cursor:pointer;
+  }
+  .check:checked{background:var(--text);border-color:var(--text)}
+  .check:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:1.5px solid var(--black);border-top:0;border-left:0;transform:rotate(42deg)}
+  .skill-info{min-width:0}
+  .skill-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;line-height:1.35}
+  .skill-desc{color:var(--dim);font-size:10px;line-height:1.45;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tui-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:150px}
+  .tui-tag{color:var(--dim);font-size:9px;white-space:nowrap}
+  .tui-tag.custom{color:var(--text)}
+  .tui-tag.claude{color:var(--muted)}
+  .tui-tag.opencode{color:var(--muted)}
+  .tui-cart{border-left:1px solid var(--line);padding:15px 13px;background:var(--bg-deep)}
+  .cart-kicker{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 9px}
+  .cart-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+  .cart-title strong{font-size:12px;font-weight:500}
+  .cart-title span{font-size:9px;color:var(--dim)}
+  .selected-list{display:flex;flex-direction:column;gap:3px;min-height:38px;margin-bottom:12px}
+  .selected-item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line-soft);padding:4px 6px;font-size:10px;color:var(--muted)}
+  .selected-item button{appearance:none;border:0;background:transparent;color:var(--dim);font-size:11px;padding:0 2px}
+  .selected-item button:hover{color:var(--text)}
+  .empty-selected{color:var(--dim);font-size:10px;padding:6px 0}
+  .cmd-label{display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+  .cmd-label button{appearance:none;background:transparent;border:0;color:var(--muted);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:0}
+  .cmd-label button:hover{color:var(--text)}
+  .cmd-box{background:#090707;border:1px solid var(--line-soft);padding:9px;color:var(--muted);font-size:10px;line-height:1.65;white-space:pre-wrap;word-break:break-word;min-height:68px}
+  .cart-actions{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+  .install-btn{appearance:none;background:var(--text);color:var(--black);border:1px solid var(--text);border-radius:2px;padding:8px;font-size:11px;font-weight:600}
+  .install-btn:hover{background:#fff}
+  .install-btn:disabled{opacity:.45;cursor:wait}
+  .cart-note{margin-top:8px;color:var(--dim);font-size:9px;line-height:1.6}
+  .status-line{margin-top:10px;padding-top:9px;border-top:1px solid var(--line-soft);color:var(--dim);font-size:9px;line-height:1.6;min-height:32px}
+  .status-line .ok{color:var(--text)}
+  .status-line .warn{color:var(--muted)}
+  .tui-status{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding:8px 12px;background:#0b0909;color:var(--dim);font-size:9px}
+  .tui-status .dot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--muted);margin-right:5px}
+  .section{border-top:1px solid var(--line);padding:58px 0}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;margin-bottom:26px}
+  .section-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+  h2{margin:0;font-size:clamp(19px,2.4vw,24px);line-height:1.3;font-weight:600;letter-spacing:-.025em}
+  .section-head p{margin:0;max-width:460px;color:var(--muted);font-size:12px;line-height:1.7}
+  .what p{max-width:760px;color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 20px}
+  .feature-list{list-style:none;padding:0;margin:0;border-top:1px solid var(--line-soft)}
+  .feature-list li{display:grid;grid-template-columns:34px 180px minmax(0,1fr);gap:12px;align-items:baseline;border-bottom:1px solid var(--line-soft);padding:11px 0;font-size:12px}
+  .feature-list .marker{color:var(--dim);font-size:11px}
+  .feature-list strong{font-weight:500;color:var(--text)}
+  .feature-list span:last-child{color:var(--muted);font-size:11px}
+  .what .btn{margin-top:20px}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;padding-top:6px}
+  .chart{border-top:1px solid var(--line-soft);padding-top:18px;min-height:120px}
+  .chart svg{display:block;width:100%;height:88px;color:var(--muted);opacity:.8}
+  .stat-label{margin-top:10px;color:var(--dim);font-size:9px;letter-spacing:.06em}
+  .data-table{width:100%;border-collapse:collapse;font-size:11px}
+  .data-table th,.data-table td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  .data-table th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:400;border-bottom-color:var(--line)}
+  .data-table td:first-child{color:var(--text);white-space:nowrap}
+  .data-table td:nth-child(2){white-space:nowrap;color:var(--muted)}
+  .data-table td:last-child{text-align:right;white-space:nowrap}
+  .data-table tbody tr:hover{background:var(--bg-panel)}
+  .table-wrap{overflow-x:auto}
+  .inline-tag{color:var(--dim);font-size:10px}
+  .inline-tag.custom{color:var(--text)}
+  .table-link{color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:10px}
+  .table-link:hover{color:var(--text)}
+  .routing{
+    border:1px solid var(--line-soft);background:var(--bg-deep);padding:13px 14px;margin-bottom:18px;
+    color:var(--dim);font-size:10px;line-height:1.9;overflow-x:auto;
+  }
+  .routing .node{color:var(--muted)}
+  .routing .node.task{color:var(--text)}
+  .routing .node.bot{color:var(--text)}
+  .routing .arrow{color:var(--dim);margin:0 4px}
+  .routing .or{color:var(--dim);margin:0 3px}
+  .runtimes-note{color:var(--dim);font-size:10px;margin-top:12px}
+  .runtimes-note strong{color:var(--muted);font-weight:500}
+  .faq{border-top:1px solid var(--line-soft)}
+  .faq details{border-bottom:1px solid var(--line-soft)}
+  .faq summary{
+    list-style:none;cursor:pointer;padding:13px 0;color:var(--text);font-size:12px;
+    display:flex;align-items:flex-start;gap:10px;
+  }
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::before{content:"+";color:var(--dim);width:12px;flex:0 0 auto}
+  .faq details[open] summary::before{content:"−";color:var(--text)}
+  .faq details p{margin:0 0 15px 22px;color:var(--muted);font-size:11px;line-height:1.75;max-width:760px}
+  .about-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:40px}
+  .about-grid p{color:var(--muted);font-size:12px;line-height:1.8;margin:0 0 14px}
+  .about-links{display:flex;flex-direction:column;gap:7px;font-size:11px}
+  .about-links a{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line-soft);padding:5px 0;color:var(--muted)}
+  .about-links a:hover{color:var(--text)}
+  .about-links span{color:var(--dim)}
+  footer{border-top:1px solid var(--line);padding:34px 0 26px}
+  .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:30px;padding-bottom:30px}
+  .footer-brand .logo{margin-bottom:12px}
+  .footer-brand p{color:var(--dim);font-size:10px;line-height:1.7;max-width:260px;margin:0}
+  .footer-col h3{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:400;margin:0 0 11px}
+  .footer-col a{display:block;color:var(--muted);font-size:10px;padding:3px 0}
+  .footer-col a:hover{color:var(--text);text-decoration:underline}
+  .footer-bottom{border-top:1px solid var(--line-soft);padding-top:15px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--dim);font-size:9px}
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(6px);
+    background:var(--text);color:var(--black);padding:7px 10px;font-size:10px;font-weight:600;
+    opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;z-index:90;border-radius:2px;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:1000px){
+    .tui-body{grid-template-columns:170px minmax(0,1fr) 280px}
+    .feature-list li{grid-template-columns:24px 150px minmax(0,1fr)}
+  }
+  @media (max-width:840px){
+    .nav{display:none}
+    .tui-body,.tui-body.no-side{grid-template-columns:1fr}
+    .tui-side{display:flex;flex-wrap:wrap;gap:4px;align-items:center;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
+    .side-label{width:100%;margin-bottom:2px}
+    .filter{width:auto;padding:5px 7px}
+    .search-wrap{width:100%;margin-top:4px}
+    .side-note{display:none}
+    .tui-cart{border-left:0;border-top:1px solid var(--line)}
+    .tui-main{order:2}
+    .stats-grid{grid-template-columns:1fr;gap:22px}
+    .about-grid{grid-template-columns:1fr;gap:24px}
+    .footer-grid{grid-template-columns:1fr 1fr}
+    .section{padding:44px 0}
+    .section-head{flex-direction:column;align-items:flex-start;gap:8px}
+    .skill-row{grid-template-columns:15px minmax(0,1fr)}
+    .tui-tags{display:none}
+  }
+  @media (max-width:560px){
+    .shell{padding:0 18px}
+    .header-inner{height:58px}
+    .logo small{display:none}
+    .hero{padding:42px 0 34px}
+    .hero-visual{padding-bottom:38px}
+    .install-row{padding:9px 10px}
+    .install-cmd{font-size:10px}
+    .feature-list li{grid-template-columns:18px minmax(0,1fr);gap:8px}
+    .feature-list li span:last-child{grid-column:2}
+    .footer-grid{grid-template-columns:1fr}
+    .tui-tab{padding:9px 10px;font-size:10px}
+    .tui-status{font-size:8px}
+    .preview-tag{right:8px;bottom:8px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
+</style>
 </head>
 <body>
-  <div class="plasma-bg" aria-hidden="true">
-    <div class="blob" style="width:520px;height:520px;background:#ff9a4d;top:-120px;left:-80px;animation-delay:-5s;"></div>
-    <div class="blob" style="width:420px;height:420px;background:#ff7e5f;top:40%;right:-100px;animation-delay:-12s;"></div>
-    <div class="blob" style="width:380px;height:380px;background:#ffd9b3;bottom:-80px;left:30%;animation-delay:-18s;"></div>
-    <div class="blob" style="width:300px;height:300px;background:#ffb88c;top:20%;left:40%;animation-delay:-8s;"></div>
-    <div class="blob" style="width:260px;height:260px;background:#ffe2d1;bottom:20%;right:20%;animation-delay:-15s;"></div>
+
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="logo" href="#top" aria-label="GabeczkaG DevKit">
+      <span class="logo-mark">G</span>
+      <span>GABECZKAG<small>DEVKIT</small></span>
+    </a>
+    <nav class="nav" aria-label="Nawigacja">
+      <a href="#installer">Installer</a>
+      <a href="#skills">Skille</a>
+      <a href="#bots">Boty</a>
+      <a href="#runtimes">Języki</a>
+      <a href="#about">O mnie</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-solid" href="#installer">Download</a>
+    </div>
   </div>
-
-  <header class="site-header" id="top">
-  <nav class="navbar" aria-label="Główna nawigacja">
-    <a class="brand" href="#top"><span class="brand-name">GabeczkaG</span><span class="brand-accent">Web</span></a>
-
-    <button class="nav-toggle" aria-label="Przełącz menu" aria-expanded="false" aria-controls="nav-menu">
-      <span></span><span></span><span></span>
-    </button>
-
-    <ul class="nav-menu" id="nav-menu">
-      <li><a href="#top">Start</a></li>
-      <li><a href="#projects">Projekty</a></li>
-      <li><a href="#about">O mnie</a></li>
-      <li><a href="#contact">Kontakt</a></li>
-      <li><a href="#other">inne</a></li>
-    </ul>
-  </nav>
 </header>
 
-<main>
+<main id="top">
   <section class="hero">
-    <div class="hero-blobs" aria-hidden="true">
-      <div class="hero-blob" style="width:360px;height:360px;top:-80px;right:10%;animation-delay:-3s;"></div>
-      <div class="hero-blob" style="width:280px;height:280px;bottom:-60px;left:15%;animation-delay:-9s;"></div>
-      <div class="hero-blob" style="width:220px;height:220px;top:30%;left:55%;animation-delay:-16s;"></div>
-    </div>
-    <div class="hero-inner">
-      <p class="hero-eyebrow">GabeczkaG · hub projektów</p>
-      <h1>Moje projekty w jednym miejscu</h1>
-      <p class="hero-sub">Zbieram tu wszystkie moje repozytoria, narzędzia i eksperymenty. Przeglądaj listę poniżej albo wejdź w konkretny projekt bezpośrednio z nawigacji.</p>
-      <div class="hero-actions">
-        <a class="btn" href="#projects">Zobacz projekty</a>
-        <a class="btn btn-ghost" href="https://github.com/GabeczkaG">GitHub</a>
-        <a class="btn" href="#other">Inne</a>
+    <div class="shell">
+      <h1>Skille, boty i installer dla Claude i OpenCode.</h1>
+      <p class="hero-sub">115 skilli, 6 botów on-demand i TUI, które instaluje tylko to, czego potrzebujesz. Bez backendu, bez konta, bez zbędnych kroków.</p>
+
+      <div class="install-widget" aria-label="Instalacja">
+        <div class="install-tabs" role="tablist">
+          <button class="install-tab active" data-cmd="curl" role="tab" aria-selected="true">curl</button>
+          <button class="install-tab" data-cmd="pwsh" role="tab" aria-selected="false">pwsh</button>
+          <button class="install-tab" data-cmd="check" role="tab" aria-selected="false">check</button>
+          <button class="install-tab" data-cmd="all" role="tab" aria-selected="false">all</button>
+        </div>
+        <div class="install-row">
+          <code class="install-cmd" id="heroCmd">curl -fsSL https://gabeczkag.github.io/install.sh | bash -s -- work-style claude-experience</code>
+          <button class="copy-btn" id="copyHero" aria-label="Kopiuj komendę instalacji">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="1"/><path d="M16 8V6a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-links">
+        <a href="#installer">Otwórz TUI →</a>
+        <a href="#skills">Przeglądaj skille →</a>
       </div>
     </div>
   </section>
 
-  <section class="favorites" id="favorites" hidden>
-    <div class="section-head">
-      <h2>Ulubione</h2>
-      <span class="projects-count" data-favorites-count></span>
+  <section class="hero-visual" id="installer">
+    <div class="shell">
+      <div class="tui" aria-label="Installer TUI">
+        <div class="tui-bar">
+          <span class="tui-dots"><i></i><i></i><i></i></span>
+          <span class="tui-title">devkit</span>
+        </div>
+        <div class="tui-tabs" role="tablist" aria-label="Widoki installera">
+          <button class="tui-tab active" data-tab="skills" role="tab" aria-selected="true">Skille</button>
+          <button class="tui-tab" data-tab="bots" role="tab" aria-selected="false">Boty</button>
+          <button class="tui-tab" data-tab="langs" role="tab" aria-selected="false">Języki</button>
+          <button class="tui-tab" data-tab="check" role="tab" aria-selected="false">Check</button>
+        </div>
+        <div class="tui-body" id="tuiBody">
+          <aside class="tui-side" id="tuiSide">
+            <p class="side-label">Filtruj</p>
+            <div id="filters"></div>
+            <div class="search-wrap">
+              <input class="search" id="searchInput" type="search" placeholder="Szukaj skilla..." autocomplete="off">
+            </div>
+          </aside>
+          <div class="tui-main">
+            <div class="list-head"><span id="listTitle">Wszystkie skille</span><span id="listCount">15 / 115</span></div>
+            <div id="mainList" class="skill-list"></div>
+          </div>
+          <aside class="tui-cart" id="tuiCart"></aside>
+        </div>
+      </div>
     </div>
-    <div class="projects-grid" data-favorites-grid></div>
   </section>
 
-  <section class="projects" id="projects">
-    <div class="section-head">
-      <h2>Projekty</h2>
-      <span class="projects-count" data-projects-count></span>
+  <section class="section what">
+    <div class="shell">
+      <h2>Jeden katalog. Jeden installer. Zero zgadywania.</h2>
+      <p style="margin-top:14px">DevKit zbiera skille, boty i runtime'y w jednym miejscu. Wybierasz tylko to, czego używasz — reszta nie zajmuje kontekstu ani nie uruchamia się bez powodu.</p>
+      <ul class="feature-list">
+        <li><span class="marker">[+]</span><strong>115 skilli</strong><span>Claude + OpenCode, 9 paczek, 2 autorskie skille.</span></li>
+        <li><span class="marker">[+]</span><strong>6 botów</strong><span>Researcher zawsze; reszta tylko gdy spełniony jest warunek.</span></li>
+        <li><span class="marker">[+]</span><strong>TUI installer</strong><span>Filtruj, zaznaczaj i kopiuj gotową komendę.</span></li>
+        <li><span class="marker">[+]</span><strong>Auto-download</strong><span>Opcjonalnie Go, Python, Rust, Node, Java i .NET.</span></li>
+        <li><span class="marker">[+]</span><strong>Bez backendu</strong><span>Statyczna strona + CLI. Nic nie wysyła Twojego kodu.</span></li>
+      </ul>
+      <a class="btn btn-outline" href="#skills" style="margin-top:20px">Zobacz skille →</a>
     </div>
-    <div class="projects-grid" data-projects-grid></div>
   </section>
 
-  <section class="about" id="about">
-    <h2>O mnie</h2>
-    <p>Jestem GabeczkaG — tworzę projekty open-source i narzędzia, z których sam chętnie korzystam. Ta strona to moja osobista wizytówka i centralny punkt dla wszystkiego, co publikuję. Każdy projekt linkedowany stąd prowadzi do jego repozytorium na GitHubie.</p>
+  <section class="section">
+    <div class="shell">
+      <h2 style="margin-bottom:8px">Zbudowany na otwartych skillach.</h2>
+      <p style="margin:0 0 22px;color:var(--muted);font-size:12px;line-height:1.7;max-width:700px">115 skilli z 9 paczek, 6 botów i installer, który nie uruchamia niczego bez potrzeby.</p>
+      <div class="stats-grid">
+        <div>
+          <div class="chart">
+            <svg viewBox="0 0 240 88" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M2 78 L34 70 L66 72 L98 58 L130 60 L162 44 L194 38 L226 18 L238 12" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M2 82 L34 79 L66 80 L98 70 L130 72 L162 60 L194 56 L226 40 L238 34" fill="none" stroke="currentColor" stroke-width=".6" opacity=".35"/>
+              <g fill="currentColor"><circle cx="34" cy="70" r="1.6"/><circle cx="98" cy="58" r="1.6"/><circle cx="162" cy="44" r="1.6"/><circle cx="226" cy="18" r="1.6"/></g>
+            </svg>
+          </div>
+          <div class="stat-label">115 skilli</div>
+        </div>
+        <div>
+          <div class="chart">
+            <svg viewBox="0 0 240 88" preserveAspectRatio="none" aria-hidden="true">
+              <g fill="currentColor" opacity=".55">
+                <rect x="10" y="10" width="4" height="4"/><rect x="22" y="10" width="4" height="4"/><rect x="34" y="10" width="4" height="4"/><rect x="46" y="10" width="4" height="4"/><rect x="58" y="10" width="4" height="4"/><rect x="70" y="10" width="4" height="4"/><rect x="82" y="10" width="4" height="4"/><rect x="94" y="10" width="4" height="4"/><rect x="106" y="10" width="4" height="4"/><rect x="118" y="10" width="4" height="4"/>
+                <rect x="10" y="22" width="4" height="4"/><rect x="22" y="22" width="4" height="4"/><rect x="34" y="22" width="4" height="4"/><rect x="46" y="22" width="4" height="4"/><rect x="58" y="22" width="4" height="4"/><rect x="70" y="22" width="4" height="4"/><rect x="82" y="22" width="4" height="4"/><rect x="94" y="22" width="4" height="4"/><rect x="106" y="22" width="4" height="4"/><rect x="118" y="22" width="4" height="4"/>
+                <rect x="10" y="34" width="4" height="4"/><rect x="22" y="34" width="4" height="4"/><rect x="34" y="34" width="4" height="4"/><rect x="46" y="34" width="4" height="4"/><rect x="58" y="34" width="4" height="4"/><rect x="70" y="34" width="4" height="4"/><rect x="82" y="34" width="4" height="4"/><rect x="94" y="34" width="4" height="4"/><rect x="106" y="34" width="4" height="4"/><rect x="118" y="34" width="4" height="4"/>
+                <rect x="10" y="46" width="4" height="4"/><rect x="22" y="46" width="4" height="4"/><rect x="34" y="46" width="4" height="4"/><rect x="46" y="46" width="4" height="4"/><rect x="58" y="46" width="4" height="4"/><rect x="70" y="46" width="4" height="4"/><rect x="82" y="46" width="4" height="4"/><rect x="94" y="46" width="4" height="4"/><rect x="106" y="46" width="4" height="4"/><rect x="118" y="46" width="4" height="4"/>
+                <rect x="10" y="58" width="4" height="4"/><rect x="22" y="58" width="4" height="4"/><rect x="34" y="58" width="4" height="4"/><rect x="46" y="58" width="4" height="4"/><rect x="58" y="58" width="4" height="4"/><rect x="70" y="58" width="4" height="4"/><rect x="82" y="58" width="4" height="4"/><rect x="94" y="58" width="4" height="4"/><rect x="106" y="58" width="4" height="4"/><rect x="118" y="58" width="4" height="4"/>
+              </g>
+              <g fill="currentColor"><rect x="142" y="14" width="4" height="4"/><rect x="154" y="26" width="4" height="4"/><rect x="166" y="20" width="4" height="4"/><rect x="178" y="38" width="4" height="4"/><rect x="190" y="32" width="4" height="4"/><rect x="202" y="50" width="4" height="4"/><rect x="214" y="44" width="4" height="4"/><rect x="226" y="60" width="4" height="4"/></g>
+            </svg>
+          </div>
+          <div class="stat-label">09 paczek</div>
+        </div>
+        <div>
+          <div class="chart">
+            <svg viewBox="0 0 240 88" preserveAspectRatio="none" aria-hidden="true">
+              <g fill="currentColor" opacity=".7">
+                <rect x="14" y="62" width="10" height="20"/><rect x="40" y="52" width="10" height="30"/><rect x="66" y="56" width="10" height="26"/><rect x="92" y="40" width="10" height="42"/><rect x="118" y="46" width="10" height="36"/><rect x="144" y="30" width="10" height="52"/><rect x="170" y="34" width="10" height="48"/><rect x="196" y="18" width="10" height="64"/><rect x="222" y="24" width="10" height="58"/>
+              </g>
+            </svg>
+          </div>
+          <div class="stat-label">06 botów</div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="contact" id="contact">
-    <h2>Kontakt</h2>
-    <p>Masz pytanie, sugestię albo chcesz współpracować? Napisz do mnie przez GitHub: <a href="https://github.com/GabeczkaG">@GabeczkaG</a>. Odpowiadam tam na issue i pull requesty.</p>
+  <section class="section" id="skills">
+    <div class="shell">
+      <div class="section-head">
+        <div><h2>Katalog, nie lista życzeń.</h2></div>
+        <p>Autorskie skille obok sprawdzonych paczek. Każdy wpis ma źródło, typ i gotową komendę instalacji.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Typ</th><th>Liczba</th><th>Opis</th><th>Install</th></tr></thead>
+          <tbody>
+            <tr><td>work-style</td><td><span class="inline-tag custom">[custom]</span></td><td>—</td><td>Zwięzłość, punktowość, tabele, <code>Run Info</code>.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>claude-experience</td><td><span class="inline-tag custom">[custom]</span></td><td>—</td><td>Ton Claude: spokojny, szczery, bez schlebiania.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>superpowers</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>14</td><td>Metodyka: TDD, debug, plany, review, worktrees.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>ECC</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>28</td><td>Backend, frontend, API, security, verification.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>addyosmani</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>24</td><td>Production-grade engineering: API, performance, CI/CD.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>ui-ux-pro-max</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>7</td><td>Design intelligence: style, palety, typografia, UX.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>archify</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>5</td><td>Diagramy architektury i ERD jako HTML.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>humanizer</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>1</td><td>Tekst bez śladów AI i szablonów.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+            <tr><td>taste-skill</td><td><span class="inline-tag">[claude] [opencode]</span></td><td>1</td><td>Art direction dla stron i interfejsów.</td><td><a class="table-link" href="#installer">install →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </section>
-  <section class="contact" class="fonts" id="other" class="rameczka">
-    <h2>Inne Informacje</h2>
-    <li>Możesz mnie znać jako GabeczkaG_Official na <a href="https://www.twitch.tv/gabeczkag_official">Twitchu</a></li>
-    <li>Dzieki że tutaj jesteście!</li>
+
+  <section class="section" id="bots">
+    <div class="shell">
+      <div class="section-head">
+        <div><h2>Tylko wtedy, gdy trzeba.</h2></div>
+        <p>Router dobiera minimalny zestaw. Researcher startuje na początku; reszta czeka na warunek.</p>
+      </div>
+      <div class="routing" aria-label="Router botów">
+        <span class="node task">task</span><span class="arrow">→</span>
+        <span class="node">router</span><span class="arrow">→</span>
+        <span class="node bot">[researcher]</span><span class="or">/</span>
+        <span class="node bot">[web-researcher]</span><span class="or">/</span>
+        <span class="node bot">[token-optimizer]</span><span class="or">/</span>
+        <span class="node bot">[code-reviewer]</span><span class="or">/</span>
+        <span class="node bot">[tester]</span><span class="or">/</span>
+        <span class="node bot">[debugger]</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Bot</th><th>Kiedy</th><th>Warunek</th><th>Efekt</th></tr></thead>
+          <tbody>
+            <tr><td>researcher</td><td>always</td><td>start zadania</td><td>brief: fakty, ryzyka, pytania</td></tr>
+            <tr><td>web-researcher</td><td>on-demand</td><td>web / docs</td><td>źródła i cytaty</td></tr>
+            <tr><td>token-optimizer</td><td>on-demand</td><td>kontekst &gt; 60%</td><td>kompresja i mniej kroków</td></tr>
+            <tr><td>code-reviewer</td><td>before merge</td><td>przed merge</td><td>findingi i regresje</td></tr>
+            <tr><td>tester</td><td>on-demand</td><td>testy</td><td>dowody i wyniki</td></tr>
+            <tr><td>debugger</td><td>on-demand</td><td>błąd</td><td>root cause + fix</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="runtimes">
+    <div class="shell">
+      <div class="section-head">
+        <div><h2>Opcjonalne runtime'y.</h2></div>
+        <p>Domyślnie tylko wykrywanie. Auto-download włączasz świadomie i tylko po potwierdzeniu.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Runtime</th><th>Wersja</th><th>Status</th><th>Komenda</th></tr></thead>
+          <tbody>
+            <tr><td>Go</td><td>1.27.3</td><td><span class="inline-tag">[detected]</span></td><td><code>go version</code></td></tr>
+            <tr><td>Python</td><td>3.12.3</td><td><span class="inline-tag">[detected]</span></td><td><code>python3 --version</code></td></tr>
+            <tr><td>Rust</td><td>1.99.1</td><td><span class="inline-tag">[detected]</span></td><td><code>rustc --version</code></td></tr>
+            <tr><td>Node.js</td><td>24.22.1</td><td><span class="inline-tag">[detected]</span></td><td><code>node -v</code></td></tr>
+            <tr><td>Java</td><td>21.0.13</td><td><span class="inline-tag">[detected]</span></td><td><code>java -version</code></td></tr>
+            <tr><td>.NET</td><td>10.0.402</td><td><span class="inline-tag">[detected]</span></td><td><code>dotnet --version</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="runtimes-note"><strong>Auto-download:</strong> opcjonalny. Installer najpierw sprawdza PATH, potem pobiera oficjalny runtime.</p>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="shell">
+      <div class="section-head">
+        <div><h2>Pytania, które warto zadać.</h2></div>
+      </div>
+      <div class="faq">
+        <details open>
+          <summary>Czy to działa z Claude Code?</summary>
+          <p>Tak. Skille są w formacie <code>SKILL.md</code>; installer kopiuje je do <code>~/.claude/skills</code> albo <code>~/.config/opencode/skills</code>.</p>
+        </details>
+        <details>
+          <summary>Czy installer coś wysyła?</summary>
+          <p>Nie. Strona jest statyczna, a CLI pobiera manifest i pliki z GitHuba. Żaden kod projektu nie opuszcza maszyny.</p>
+        </details>
+        <details>
+          <summary>Czy boty uruchamiają się zawsze?</summary>
+          <p>Nie. Researcher startuje na początku zadania; reszta tylko przy spełnieniu warunku z tabeli routingu.</p>
+        </details>
+        <details>
+          <summary>Czy auto-download jest domyślny?</summary>
+          <p>Nie. Domyślnie installer tylko wykrywa runtime'y. Pobieranie wymaga świadomej zgody i oficjalnego źródła.</p>
+        </details>
+        <details>
+          <summary>Czy mogę dodać własny skill?</summary>
+          <p>Tak. Wystarczy katalog z <code>SKILL.md</code>; manifest generuje się z frontmatter.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div class="shell">
+      <div class="section-head">
+        <div><h2>Kto to zbudował.</h2></div>
+      </div>
+      <div class="about-grid">
+        <div>
+          <p>GabeczkaG — open-source, narzędzia i eksperymenty wokół AI, backendu i developer experience. Buduję rzeczy, z których sam chcę korzystać: skille, boty, installery i małe narzędzia, które skracają drogę od pomysłu do działającego kodu.</p>
+          <p>Ta strona jest katalogiem i installerem. Reszta — repo, eksperymenty, notatki — jest na GitHubie.</p>
+        </div>
+        <div class="about-links">
+          <a href="https://github.com/gabeczkag" target="_blank" rel="noopener">GitHub <span>@gabeczkag ↗</span></a>
+          <a href="https://www.twitch.tv/gabeczkag_official" target="_blank" rel="noopener">Twitch <span>GabeczkaG_Official ↗</span></a>
+          <a href="https://gabeczkag.github.io/" target="_blank" rel="noopener">Strona <span>gabeczkag.github.io ↗</span></a>
+        </div>
+      </div>
+    </div>
   </section>
 </main>
-<footer class="site-footer">
-  <p>&copy; <span data-year></span> GabeczkaG. Rozpowszechnianie na licencji <a href="LICENSE">GNU GPL v3</a>.</p>
+
+<footer>
+  <div class="shell">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="#top"><span class="logo-mark">G</span><span>GABECZKAG<small>DEVKIT</small></span></a>
+        <p>Skille, boty i installer dla Claude i OpenCode. Open source, bez backendu.</p>
+      </div>
+      <div class="footer-col"><h3>DevKit</h3><a href="#installer">Installer</a><a href="#skills">Skille</a><a href="#bots">Boty</a><a href="#runtimes">Języki</a></div>
+      <div class="footer-col"><h3>Source</h3><a href="https://github.com/gabeczkag" target="_blank" rel="noopener">GitHub ↗</a><a href="https://github.com/gabeczkag/gabeczkag.github.io" target="_blank" rel="noopener">Repozytorium ↗</a><a href="https://github.com/gabeczkag/gabeczkag.github.io/blob/main/LICENSE" target="_blank" rel="noopener">GNU GPL v3 ↗</a></div>
+      <div class="footer-col"><h3>Contact</h3><a href="https://github.com/gabeczkag" target="_blank" rel="noopener">GitHub ↗</a><a href="https://www.twitch.tv/gabeczkag_official" target="_blank" rel="noopener">Twitch ↗</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 GabeczkaG · GNU GPL v3</span><span>built with opencode + claude</span></div>
+  </div>
 </footer>
 
-<script src="assets/js/main.js?v=2026-08-15" defer></script>
+<div class="toast" id="toast">Skopiowano komendę</div>
+
+<script src="skills/index.js"></script>
+<script>
+  const demoSkills = [
+    {id:"work-style", name:"work-style", desc:"Zwięzłość, punktowość, tabele, Run Info i jakość przed kolejnym krokiem.", source:"custom", types:["opencode","claude"], installed:true},
+    {id:"claude-experience", name:"claude-experience", desc:"Ton Claude: spokojny, precyzyjny, szczery, bez schlebiania.", source:"custom", types:["claude","opencode"], installed:true},
+    {id:"brainstorming", name:"brainstorming", desc:"Najpierw pytania i wybór podejścia, dopiero potem budowa.", source:"superpowers", types:["claude","opencode"], installed:true},
+    {id:"test-driven-development", name:"test-driven-development", desc:"Red-green-refactor i dowód, że zmiana naprawdę działa.", source:"superpowers", types:["claude","opencode"], installed:true},
+    {id:"systematic-debugging", name:"systematic-debugging", desc:"Reprodukcja, hipotezy i root cause zamiast zgadywania.", source:"superpowers", types:["claude","opencode"], installed:true},
+    {id:"requesting-code-review", name:"requesting-code-review", desc:"Świeży kontekst do review przed merge.", source:"superpowers", types:["claude","opencode"], installed:true},
+    {id:"api-and-interface-design", name:"api-and-interface-design", desc:"Stabilne API, granice modułów i kontrakty typów.", source:"addyosmani", types:["claude","opencode"], installed:true},
+    {id:"security-and-hardening", name:"security-and-hardening", desc:"OWASP, input handling, sekrety i supply chain.", source:"addyosmani", types:["claude","opencode"], installed:true},
+    {id:"frontend-design", name:"frontend-design", desc:"Świadomy kierunek wizualny zamiast templatki.", source:"anthropic", types:["claude","opencode"], installed:true},
+    {id:"ui-ux-pro-max", name:"ui-ux-pro-max", desc:"Style, palety, typografia i decyzje UI/UX.", source:"ui-ux-pro-max", types:["claude","opencode"], installed:true},
+    {id:"mcp-builder", name:"mcp-builder", desc:"Budowa serwerów MCP w Pythonie i TypeScripcie.", source:"anthropic", types:["claude","opencode"], installed:true},
+    {id:"webapp-testing", name:"webapp-testing", desc:"Playwright: testy UI, screenshoty i logi przeglądarki.", source:"anthropic", types:["claude","opencode"], installed:true},
+    {id:"archify", name:"archify", desc:"Diagramy architektury i ERD jako interaktywny HTML.", source:"archify", types:["claude","opencode"], installed:true},
+    {id:"humanizer", name:"humanizer", desc:"Usuwa z tekstu ślady AI i szablony.", source:"humanizer", types:["claude","opencode"], installed:true},
+    {id:"taste-skill", name:"taste-skill", desc:"Art direction dla stron i interfejsów.", source:"taste", types:["claude","opencode"], installed:true}
+  ];
+  let skills = demoSkills;
+
+  const bots = [
+    {name:"researcher", when:"always", desc:"Kontekst repo, dokumentacji i źródeł przed zadaniem. Read-only.", route:"start zadania"},
+    {name:"web-researcher", when:"on-demand", desc:"Źródła, dokumentacja i konkurencja, gdy potrzebny jest internet.", route:"web / docs"},
+    {name:"token-optimizer", when:"on-demand", desc:"Kompresuje kontekst, ucina zbędne kroki i pilnuje budżetu tokenów.", route:"kontekst > 60%"},
+    {name:"code-reviewer", when:"before merge", desc:"Correctness, security, regresje i brakujące testy.", route:"przed merge"},
+    {name:"tester", when:"on-demand", desc:"Uruchamia testy, zbiera dowody i raportuje wyniki.", route:"testy"},
+    {name:"debugger", when:"on-demand", desc:"Reprodukuje błąd i szuka root cause.", route:"błąd"}
+  ];
+
+  const langs = [
+    {name:"Go", version:"1.27.3", cmd:"go version", status:"detected"},
+    {name:"Python", version:"3.12.3", cmd:"python3 --version", status:"detected"},
+    {name:"Rust", version:"1.99.1", cmd:"rustc --version", status:"detected"},
+    {name:"Node.js", version:"24.22.1", cmd:"node -v", status:"detected"},
+    {name:"Java", version:"21.0.13", cmd:"java -version", status:"detected"},
+    {name:".NET", version:"10.0.402", cmd:"dotnet --version", status:"detected"}
+  ];
+
+  const state = {
+    tab:"skills",
+    filter:"all",
+    query:"",
+    selected:new Set(["work-style","claude-experience","brainstorming"])
+  };
+
+  let filters = [];
+
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function typeTags(types){
+    return types.map(t => `<span class="tui-tag ${t}">[${t}]</span>`).join("");
+  }
+
+  function buildFilters(){
+    const count = (fn) => skills.filter(fn).length;
+    filters = [
+      {id:"all", label:"Wszystkie", count:skills.length},
+      {id:"claude", label:"Claude", count:count(s => (s.types||[]).includes("claude"))},
+      {id:"opencode", label:"OpenCode", count:count(s => (s.types||[]).includes("opencode"))},
+      {id:"custom", label:"Custom", count:count(s => s.source === "custom")}
+    ];
+  }
+
+  function filteredSkills(){
+    return skills.filter(s => {
+      if(state.filter === "custom" && s.source !== "custom") return false;
+      if(state.filter === "claude" && !(s.types||[]).includes("claude")) return false;
+      if(state.filter === "opencode" && !(s.types||[]).includes("opencode")) return false;
+      if(state.query){
+        const hay = (s.name + " " + s.desc + " " + s.source).toLowerCase();
+        if(!hay.includes(state.query)) return false;
+      }
+      return true;
+    });
+  }
+
+  function renderFilters(){
+    $("#filters").innerHTML = filters.map(f => `
+      <button class="filter ${state.filter===f.id?"active":""}" data-filter="${f.id}">
+        <span>${f.label}</span><span class="count">${f.count}</span>
+      </button>`).join("");
+    $$("#filters .filter").forEach(btn => btn.addEventListener("click", () => {
+      state.filter = btn.dataset.filter;
+      renderAll();
+    }));
+  }
+
+  function renderSkillList(){
+    const list = $("#mainList");
+    const items = filteredSkills();
+    const label = filters.find(f => f.id === state.filter)?.label || "Wszystkie";
+    $("#listTitle").textContent = label + " skille";
+    $("#listCount").textContent = `${items.length} / ${skills.length}`;
+    if(!items.length){
+      list.innerHTML = `<div class="empty-selected">Brak wyników. Zmień filtr albo frazę.</div>`;
+      return;
+    }
+    list.innerHTML = items.map(s => `
+      <label class="skill-row ${state.selected.has(s.id)?"selected":""}">
+        <input class="check" type="checkbox" ${state.selected.has(s.id)?"checked":""} data-skill="${s.id}" aria-label="Wybierz ${esc(s.name)}">
+        <span class="skill-info">
+          <span class="skill-name">${esc(s.name)}</span>
+          <span class="skill-desc">${esc(s.desc)}</span>
+        </span>
+        <span class="tui-tags">${typeTags(s.types)}</span>
+      </label>`).join("");
+    $$("#mainList .check").forEach(cb => cb.addEventListener("change", () => {
+      if(cb.checked) state.selected.add(cb.dataset.skill);
+      else state.selected.delete(cb.dataset.skill);
+      renderCart();
+      cb.closest(".skill-row").classList.toggle("selected", cb.checked);
+    }));
+  }
+
+  function commandForSelected(){
+    const ids = [...state.selected];
+    if(!ids.length) return "# zaznacz co najmniej jeden skill";
+    return `curl -fsSL https://gabeczkag.github.io/install.sh \\\n  | bash -s -- ${ids.join(" ")}`;
+  }
+
+  function renderCart(){
+    const ids = [...state.selected];
+    const selectedItems = skills.filter(s => state.selected.has(s.id));
+    $("#tuiCart").innerHTML = `
+      <div class="cart-title"><strong>Do instalacji</strong><span>${ids.length} wybrane</span></div>
+      <div class="selected-list">
+        ${selectedItems.length ? selectedItems.map(s => `
+          <div class="selected-item"><span>${esc(s.name)}</span><button data-remove="${s.id}" aria-label="Usuń ${esc(s.name)}">×</button></div>
+        `).join("") : `<div class="empty-selected">Nic nie zaznaczono.</div>`}
+      </div>
+      <div class="cmd-label"><span>Komenda</span><button id="copyCmd">Kopiuj</button></div>
+      <div class="cmd-box" id="commandBox">${esc(commandForSelected())}</div>
+      <div class="cart-actions"><button class="install-btn" id="installBtn" ${ids.length?"":"disabled"}>Zainstaluj zaznaczone</button></div>`;
+
+    $("#copyCmd")?.addEventListener("click", copyCommand);
+    $("#installBtn")?.addEventListener("click", fakeInstall);
+    $$("#tuiCart [data-remove]").forEach(btn => btn.addEventListener("click", () => {
+      state.selected.delete(btn.dataset.remove);
+      renderAll();
+    }));
+  }
+
+  function copyCommand(){
+    navigator.clipboard?.writeText(commandForSelected()).then(showToast).catch(() => {});
+  }
+
+  function showToast(){
+    const t = $("#toast");
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1500);
+  }
+
+  function fakeInstall(){
+    const btn = $("#installBtn");
+    if(!btn) return;
+    btn.disabled = true;
+    btn.textContent = "Instalowanie...";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = "Zainstaluj zaznaczone";
+      showToast();
+    }, 1100);
+  }
+
+  function renderBots(){
+    $("#listTitle").textContent = "Boty on-demand";
+    $("#listCount").textContent = `${bots.length} botów`;
+    $("#mainList").innerHTML = bots.map(b => `
+      <div class="skill-row" style="cursor:default">
+        <span style="width:13px"></span>
+        <span class="skill-info">
+          <span class="skill-name">${esc(b.name)} <span class="tui-tag">[${esc(b.when)}]</span></span>
+          <span class="skill-desc">${esc(b.desc)}</span>
+        </span>
+        <span class="tui-tags"><span class="tui-tag opencode">[${esc(b.route)}]</span></span>
+      </div>`).join("");
+    $("#tuiCart").innerHTML = `
+      <div class="cart-title"><strong>Minimalny zestaw</strong><span>on-demand</span></div>
+      <div class="selected-list">
+        ${bots.map(b => `<div class="selected-item"><span>${esc(b.name)}</span><span style="color:var(--dim)">${esc(b.when)}</span></div>`).join("")}
+      </div>`;
+  }
+
+  function renderLangs(){
+    $("#listTitle").textContent = "Wykryte runtime'y";
+    $("#listCount").textContent = `${langs.length} języków`;
+    $("#mainList").innerHTML = langs.map(l => `
+      <div class="skill-row" style="cursor:default">
+        <span style="width:13px"></span>
+        <span class="skill-info">
+          <span class="skill-name">${esc(l.name)} <span class="tui-tag">[${esc(l.status)}]</span></span>
+          <span class="skill-desc">${esc(l.cmd)}</span>
+        </span>
+        <span class="tui-tags"><span class="tui-tag">${esc(l.version)}</span></span>
+      </div>`).join("");
+    $("#tuiCart").innerHTML = `
+      <div class="cart-title"><strong>Auto-download</strong><span>opcjonalnie</span></div>
+      <div class="selected-list">
+        <div class="selected-item"><span>Wykrywanie</span><span style="color:var(--text)">ON</span></div>
+        <div class="selected-item"><span>Auto-download</span><span style="color:var(--muted)">OFF</span></div>
+        <div class="selected-item"><span>Potwierdzenie</span><span style="color:var(--text)">wymagane</span></div>
+      </div>`;
+  }
+
+  function renderCheck(){
+    $("#listTitle").textContent = "Check";
+    $("#listCount").textContent = "CLI";
+    $("#mainList").innerHTML = `
+      <div class="skill-row" style="cursor:default">
+        <span style="width:13px;color:var(--text)">$</span>
+        <span class="skill-info">
+          <span class="skill-name">Sprawdź lokalny stan</span>
+          <span class="skill-desc">Przeglądarka nie widzi ~/.config — użyj CLI:</span>
+        </span>
+      </div>
+      <div class="cmd-box" style="margin:8px 0">curl -fsSL https://gabeczkag.github.io/install.sh | bash -s -- --check</div>
+      <div class="cmd-box" style="margin:8px 0">pwsh -File install.ps1 -Check</div>`;
+    $("#tuiCart").innerHTML = `
+      <div class="cart-title"><strong>Check</strong><span>CLI</span></div>
+      <div class="selected-list">
+        <div class="selected-item"><span>OpenCode</span><span style="color:var(--muted)">API + pliki</span></div>
+        <div class="selected-item"><span>Claude</span><span style="color:var(--muted)">~/.claude/skills</span></div>
+        <div class="selected-item"><span>Raport</span><span style="color:var(--muted)">tabela</span></div>
+      </div>`;
+  }
+
+  function setTab(tab){
+    state.tab = tab;
+    $$(".tui-tab").forEach(btn => {
+      const active = btn.dataset.tab === tab;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-selected", String(active));
+    });
+    $("#tuiBody").classList.toggle("no-side", tab !== "skills");
+    if(tab === "skills"){
+      renderSkillsSide();
+      renderSkillList();
+      renderCart();
+    } else if(tab === "bots"){
+      renderBots();
+    } else if(tab === "langs"){
+      renderLangs();
+    } else if(tab === "check"){
+      renderCheck();
+    }
+  }
+
+  function renderSkillsSide(){
+    $("#tuiSide").innerHTML = `
+      <p class="side-label">Filtruj</p>
+      <div id="filters"></div>
+      <div class="search-wrap"><input class="search" id="searchInput" type="search" placeholder="Szukaj skilla..." autocomplete="off" value="${esc(state.query)}"></div>`;
+    renderFilters();
+    const input = $("#searchInput");
+    input?.addEventListener("input", () => {
+      state.query = input.value.trim().toLowerCase();
+      renderSkillList();
+    });
+  }
+
+  function renderAll(){
+    if(state.tab === "skills"){
+      renderSkillsSide();
+      renderSkillList();
+      renderCart();
+    } else {
+      setTab(state.tab);
+    }
+  }
+
+  $$(".tui-tab").forEach(btn => btn.addEventListener("click", () => setTab(btn.dataset.tab)));
+
+  const heroCommands = {
+    curl:"curl -fsSL https://gabeczkag.github.io/install.sh | bash -s -- work-style claude-experience",
+    pwsh:"irm https://gabeczkag.github.io/install.ps1 | iex",
+    check:"curl -fsSL https://gabeczkag.github.io/install.sh | bash -s -- --check",
+    all:"curl -fsSL https://gabeczkag.github.io/install.sh | bash -s -- --all"
+  };
+  $$(".install-tab").forEach(btn => btn.addEventListener("click", () => {
+    $$(".install-tab").forEach(b => { b.classList.toggle("active", b === btn); b.setAttribute("aria-selected", String(b === btn)); });
+    $("#heroCmd").textContent = heroCommands[btn.dataset.cmd] || heroCommands.curl;
+  }));
+  $("#copyHero")?.addEventListener("click", () => {
+    navigator.clipboard?.writeText($("#heroCmd").textContent).then(showToast).catch(() => {});
+  });
+
+  function applyDb(data){
+    if(Array.isArray(data.skills) && data.skills.length){
+      skills = data.skills.map(s => ({
+        ...s,
+        desc: s.description || s.desc || '',
+        installed: true
+      }));
+      state.selected = new Set(['work-style','claude-experience']);
+    }
+  }
+
+  async function loadSkills(){
+    if(window.DEVKIT_DB && Array.isArray(window.DEVKIT_DB.skills)){
+      applyDb(window.DEVKIT_DB);
+    } else {
+      try {
+        const res = await fetch('skills/index.json', { cache: 'no-store' });
+        if(res.ok) applyDb(await res.json());
+      } catch(e) {}
+    }
+    buildFilters();
+    renderSkillsSide();
+    renderSkillList();
+    renderCart();
+  }
+  loadSkills();
+</script>
 </body>
 </html>
