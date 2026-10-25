@@ -11,12 +11,13 @@ Te katalogi są częścią repo i instalują się bez klonowania zewnętrznych r
 | `webapp-testing` | Anthropic | Apache-2.0 |
 | `frontend-design` | Anthropic | Apache-2.0 |
 | `humanizer` | Siqi Chen | MIT |
+| `jeffallan/*` (67 skilli) | Jeffallan | MIT |
 
 Pozostałe skille w `skills.json` mają typ `git` i są pobierane z repozytoriów upstream przy instalacji; ich licencje są zapisane w manifeście i kopiowane razem ze skillem.
 
 ## Mini database
 
-- `index.json` — kanoniczna baza 115 skilli (dla installerów)
+- `index.json` — kanoniczna baza 182 skilli (dla installerów)
 - `index.js` — wygenerowana kopia dla podglądu w przeglądarce
 
 Po zmianie `index.json`:

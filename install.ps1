@@ -307,7 +307,7 @@ function Show-TuiFrame {
     $width = Get-TuiWidth
     Write-Host ($esc + '[2J' + $esc + '[H') -NoNewline
     Write-Host ('DEVKIT / TUI   target: {0}   selected: {1}' -f $Target, $Selected.Count)
-    Write-Host ('115 skills · ↑↓ move · space select · a all · n none · t target · c check · enter install · q quit')
+    Write-Host ('{0} skills · ↑↓ move · space select · a all · n none · t target · c check · enter install · q quit' -f $Items.Count)
     Write-Host ('-' * $width)
     $end = [Math]::Min($Top + $PageSize, $Items.Count)
     for ($i = $Top; $i -lt $end; $i++) {

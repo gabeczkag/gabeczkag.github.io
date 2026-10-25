@@ -6,10 +6,10 @@ Statyczna strona-katalog skilli dla Claude i OpenCode + installer CLI/TUI.
 
 Wszystkie skille są w tym repo:
 
-- `skills/index.json` — mini database (115 pozycji)
+- `skills/index.json` — mini database (182 pozycje)
 - `skills/index.js` — wygenerowana kopia DB dla podglądu w przeglądarce
-- `skills/<id>/` — 99 gotowych katalogów skilli
-- 14 skilli Superpowers instaluje się jako plugin OpenCode
+- `skills/<id>/` — 166 gotowych katalogów skilli
+- 14 skilli Superpowers instaluje się jako plugin OpenCode, 67 skilli Jeffallan jest w bundlu
 - 2 pozycje to builtin OpenCode
 
 Installer pobiera **jeden ZIP repo** i kopiuje wybrane foldery lokalnie. Nie klonuje 92 repozytoriów i nie robi setek requestów per skill.
