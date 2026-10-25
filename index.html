@@ -577,7 +577,7 @@
 
 <div class="toast" id="toast">Skopiowano komendę</div>
 
-<script src="skills/index.js"></script>
+<script src="skills/index.js?v=182"></script>
 <script>
   const demoSkills = [
     {id:"work-style", name:"work-style", desc:"Zwięzłość, punktowość, tabele, Run Info i jakość przed kolejnym krokiem.", source:"custom", types:["opencode","claude"], installed:true},
@@ -882,7 +882,7 @@
       applyDb(window.DEVKIT_DB);
     } else {
       try {
-        const res = await fetch('skills/index.json', { cache: 'no-store' });
+        const res = await fetch('skills/index.json?v=182', { cache: 'no-store' });
         if(res.ok) applyDb(await res.json());
       } catch(e) {}
     }
